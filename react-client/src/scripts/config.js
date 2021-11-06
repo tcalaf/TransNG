@@ -1,4 +1,0 @@
-var config = {
-    TUDOR_ARCGIS_API: "AAPKf504328882f2493fb943cc0e1c1a8a3dq-tEq9T2ePEy-C82LXsbpKl2_9OzdHKcTzzUQySVbG_04IxijOvp33siprkqJCxh",
-    //FIREBASE_API: "AIzaSyC-P185T6tSyjOe_aOSeAG65UJhol_B7k4",
-}

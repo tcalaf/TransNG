@@ -1,1 +1,0 @@
-[Project demo](https://proiectisi-4712b.web.app/).
