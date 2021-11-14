@@ -2,13 +2,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import "./Dashboard.css";
 import { auth, db, logout } from "../firebase";
 import logo from './../assets/delivery_light.png';
+import CarrierHeader from "./Carrier/CarrierHeader";
+import ClientHeader from "./Client/ClientHeader";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import ClientSettings from "./Client/ClientSettings";
+import CarrierSettings from "./Carrier/CarrierSettings";
 
 function Dashboard() {
 	const [user, loading, error] = useAuthState(auth);
@@ -51,7 +54,7 @@ function Dashboard() {
 
 	return (
 		<div>
-			<Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+			<Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{height:"4vh"}}>
 				<Container>
 				<Navbar.Brand href="#home">
 					<img src={logo} alt="TransNG Logo" width="30" height="30"/>{' '}TransNG
@@ -62,21 +65,9 @@ function Dashboard() {
 					<Nav.Link eventKey="disabled" disabled>Logged in as {name} | {role}</Nav.Link>
 					{
 						role === "Client" ? (
-							<React.Fragment>
-							<Nav.Link href="#ship">Ship</Nav.Link>
-							<Nav.Link href="#shipments">My Shipments</Nav.Link>
-							</React.Fragment>
+							<ClientHeader></ClientHeader>
 						) : (
-							<React.Fragment>
-							<Nav.Link href="#newoffers">New Offers</Nav.Link>
-							<NavDropdown title="My Transports" id="collasible-nav-dropdown">
-								<NavDropdown.Item href="#transport/1">B100TNG Arad-Bucuresti</NavDropdown.Item>
-								<NavDropdown.Item href="#transport/2">B200TNG Bucuresti-Constanta</NavDropdown.Item>
-								<NavDropdown.Item href="#transport/3">B300TNG Sibiu-Brasov</NavDropdown.Item>
-								<NavDropdown.Divider />
-								<NavDropdown.Item href="#action/3.4">Finished Transports</NavDropdown.Item>
-							</NavDropdown>
-							</React.Fragment>
+							<CarrierHeader></CarrierHeader>
 						)
 					}
 					</Nav>
@@ -88,8 +79,19 @@ function Dashboard() {
 				</Navbar.Collapse>
 				</Container>
 			</Navbar>
+			<div class="column menu">
+				{
+					role === "Client" ? (
+						<ClientSettings value={name}/>
+					) : (
+						<CarrierSettings email={user?.email} name={name}/>
+					)
+				}
+			</div>
+			<div class="column map" style={{backgroundColor:"#ADD8E6"}}>
+				<h1>TODO: Put ArcGIS map functionality here</h1>
+			</div>
 		</div>
-		
 	);
 }
 export default Dashboard;

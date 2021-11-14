@@ -1,27 +1,33 @@
-/*
-.dashboard {
-		height: 100vh;
-		width: 100vw;
-		display: flex;
-		align-items: center;
-		justify-content: center;
+* {
+	box-sizing: border-box;
+}
+
+/* Create three equal columns that floats next to each other */
+.column {
+	float: left;
+	padding: 16px;
+	height: 96vh;
+}
+
+.menu {
+	width: 33.33%;
+}
+
+.map {
+	width: 66.66%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 800px) {
+	.column {
+		width: 100%;
+		height: fit-content;
 	}
-	.dashboard__container {
-		display: flex;
-		flex-direction: column;
-		text-align: center;
-		background-color: #dcdcdc;
-		padding: 30px;
-	}
-	.dashboard__btn {
-		padding: 10px;
-		font-size: 18px;
-		margin-top: 10px;
-		border: none;
-		color: white;
-		background-color: black;
-	}
-	.dashboard div {
-		margin-top: 7px;
-	}
-*/
+}
