@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Link, useHistory } from "react-router-dom";
 import { auth, registerWithEmailAndPassword } from "../firebase";
+import logo from './../assets/delivery.png';
 import "./Register.css";
 
 function Register() {
@@ -42,6 +43,10 @@ function Register() {
 	return (
 	<div className="register">
 		<div className="register__container">
+			<div >
+				<img src={logo} alt="TransNG Logo" width="64px" height="64px" />
+				<p style={{ fontSize: '24px', fontWeight: 'bold' }} >TransNG</p>
+			</div>
 			<input type="text" className="register__textBox" value={name} onChange={(e) => setName(e.target.value)} placeholder="Full Name" />
 			<input type="text" className="register__textBox" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail Address"/>
 			<input type="password" className="register__textBox" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
