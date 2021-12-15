@@ -12,6 +12,8 @@ import ClientHeader from "./Client/ClientHeader";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ClientSettings from "./Client/ClientSettings";
 import CarrierSettings from "./Carrier/CarrierSettings";
+import AdminSettings from "./Admin/AdminSettings";
+import AdminHeader from "./Admin/AdminHeader";
 import UserMap from "../components/UserMap";
 
 function Dashboard() {
@@ -67,8 +69,10 @@ function Dashboard() {
 					{
 						role === "Client" ? (
 							<ClientHeader></ClientHeader>
-						) : (
+						) : role === "Carrier" ? (
 							<CarrierHeader></CarrierHeader>
+						) :  (						
+							<AdminHeader></AdminHeader>
 						)
 					}
 					</Nav>
@@ -84,8 +88,10 @@ function Dashboard() {
 				{
 					role === "Client" ? (
 						<ClientSettings value={name}/>
+					) : role === "Carrier" ? (
+						<CarrierSettings email={user?.email} name={name} uid={user?.uid}/>
 					) : (
-						<CarrierSettings email={user?.email} name={name}/>
+						<AdminSettings></AdminSettings>
 					)
 				}
 			</div>
