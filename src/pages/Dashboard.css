@@ -17,6 +17,7 @@
 
 .menu {
 	width: 33.33%;
+	overflow-y: auto;
 }
 
 .map {

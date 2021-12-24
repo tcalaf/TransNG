@@ -81,6 +81,10 @@ const CarrierSettings=(props)=>{
 
             <h3>New Truck</h3>
             <Form.Group className="mb-3" controlId="formGridAddress1">
+                <Form.Label>Licence Plate:</Form.Label>
+                <Form.Control placeholder="B 123 TNG" />
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formGridAddress1">
                 <Form.Label>Truck Model:</Form.Label>
                 <Form.Control placeholder="2021 Volvo FH16, D16 Engine, 650 HP" />
             </Form.Group>
