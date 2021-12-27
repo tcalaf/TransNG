@@ -7,8 +7,9 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import Graphic from "@arcgis/core/Graphic";
 import Point from "@arcgis/core/geometry/Point";
 import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol";
+import PopupTemplate from "@arcgis/core/PopupTemplate";
 
-const newTruckGraphic = (coords, color, attributes = {}, popupTemplate = {}) => {
+const newTruckGraphic = (coords, color, attributes = {}) => {
   return new Graphic({
     geometry: new Point({
       x: coords.x,
@@ -22,7 +23,37 @@ const newTruckGraphic = (coords, color, attributes = {}, popupTemplate = {}) => 
       }
     }),
     attributes,
-    popupTemplate
+    popupTemplate: new PopupTemplate({
+      title: "Truck ID: {id_truck}",
+      content: [
+        {
+          type: "fields",
+          fieldInfos: [
+            {
+              label: "From",
+              fieldName: "start_place",
+            },
+            {
+              label: "To",
+              fieldName: "finish_place",
+            },
+          ]
+        },
+        {
+          type: "fields",
+          fieldInfos: [
+            {
+              label: "Departure date",
+              fieldName: "start_date",
+            },
+            {
+              label: "Arrival date",
+              fieldName: "finish_date",
+            },
+          ]
+        }
+      ]
+    })
   })
 }
 
@@ -57,33 +88,31 @@ const getDBSupplies = () => {
 
 const UserMap = (props) => {
     const mapDiv = useRef(null);
-    const [supplies, setSupplies] = useState(getDBSupplies());
+    const [supplies, setSupplies] = useState(null);
     const [view, setView] = useState(null);
 
+    // Init map parameters.
     useEffect(() => {
       esriConfig.apiKey = "AAPK445b17b023f9440aa2213838c5521ee36GsXRZpxGdn8Kp4ccanvzmycWR08vmAxcQxqqwempljZ_jX4o95h-sxhKi96aAv3";
+      const newSupplies = getDBSupplies();
+
+      setSupplies(newSupplies);
+      setView(new MapView({
+        container: mapDiv.current,
+        map: new Map({
+          basemap: "arcgis-navigation",
+          layers: [
+            new GraphicsLayer({
+              id: "Trucks Points",
+              graphics: newSupplies
+            })
+          ]
+        }),
+        scale: 1000000,
+        center: [-118.475, 34.026],
+      }));
     }, []);
 
-    useEffect(() => {
-      if (mapDiv.current) {
-        const trucksLayer = new GraphicsLayer({
-          graphics: supplies,
-        });
-
-        const map = new Map({
-          basemap: "arcgis-navigation",
-          layers: [trucksLayer]
-        });
-        
-        setView(new MapView({
-          container: mapDiv.current,
-          map: map,
-          scale: 1000000,
-          center: [-118.475, 34.026],
-        }));
-      }
-    }, [supplies]);
-    
     return <div className="mapDiv" ref={mapDiv}></div>;
 }
 
