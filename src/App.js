@@ -3,8 +3,15 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Reset from "./pages/Reset";
 import Dashboard from "./pages/Dashboard";
+import esriConfig from "@arcgis/core/config";
+import { useEffect } from "react";
 
 function App() {
+
+  useEffect(() => {
+    esriConfig.apiKey = "AAPK445b17b023f9440aa2213838c5521ee36GsXRZpxGdn8Kp4ccanvzmycWR08vmAxcQxqqwempljZ_jX4o95h-sxhKi96aAv3";
+  }, [])
+
   return (
     <div className="app">
       <Router>
