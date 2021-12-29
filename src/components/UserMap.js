@@ -1,6 +1,5 @@
 import './UserMap.css';
 import React, { useRef, useEffect, useState } from "react";
-import esriConfig from "@arcgis/core/config";
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
@@ -93,7 +92,6 @@ const UserMap = (props) => {
 
     // Init map parameters.
     useEffect(() => {
-      esriConfig.apiKey = "AAPK445b17b023f9440aa2213838c5521ee36GsXRZpxGdn8Kp4ccanvzmycWR08vmAxcQxqqwempljZ_jX4o95h-sxhKi96aAv3";
       const newSupplies = getDBSupplies();
 
       setSupplies(newSupplies);
