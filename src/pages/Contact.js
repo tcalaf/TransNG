@@ -5,6 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import "./Dashboard.css";
+import "./Contact.css";
 import { auth, db, logout } from "../firebase";
 import logo from './../assets/delivery_light.png';
 import CarrierHeader from "./Carrier/CarrierHeader";
@@ -15,14 +16,15 @@ import CarrierSettings from "./Carrier/CarrierSettings";
 import AdminSettings from "./Admin/AdminSettings";
 import AdminHeader from "./Admin/AdminHeader";
 import UserMap from "../components/UserMap";
+import { Row } from "react-bootstrap";
 
-function Dashboard() {
-	const [user, loading, error] = useAuthState(auth);
+const Contact=()=>{
+    const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
 	const history = useHistory();
-
-	const fetchData = useCallback(async () => {
+    
+    const fetchData = useCallback(async () => {
 		try {
 			const query = await db.collection("users").where("uid", "==", user?.uid).get();
 			const data = query.docs[0].data();
@@ -55,9 +57,9 @@ function Dashboard() {
 		fetchData();
 	}, [user, loading, error, history, fetchData]);
 
-	return (
-		<div>
-			<Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{height:"4vh"}}>
+    return(
+        <div>
+            <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{height:"4vh"}}>
 				<Container>
 				<Navbar.Brand href="#home">
 					<img src={logo} alt="TransNG Logo" width="30" height="30"/>{' '}TransNG
@@ -77,28 +79,24 @@ function Dashboard() {
 					}
 					</Nav>
 					<Nav>
-					<Nav.Link href="#settings">Settings</Nav.Link>
+					<Nav.Link href="/dashboard">Settings</Nav.Link>
 					<Nav.Link eventKey={2} href="/contact">Contact</Nav.Link>
 					<Nav.Link onClick={logout}>Logout</Nav.Link>
 					</Nav>
 				</Navbar.Collapse>
 				</Container>
 			</Navbar>
-			<div class="column menu">
-				{
-					role === "Client" ? (
-						<ClientSettings value={name}/>
-					) : role === "Carrier" ? (
-						<CarrierSettings email={user?.email} name={name} uid={user?.uid}/>
-					) : (
-						<AdminSettings></AdminSettings>
-					)
-				}
-			</div>
-			<div class="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				<UserMap />
-			</div>
+            <h2>Settings</h2>
+            <div class="center-screen">
+                <ul>
+                    Please contact us at:
+                    <li>+40722222222</li>
+                    <li>admin@admin.com</li>
+                    <li>Splaiul Independenței 313, București</li>
+                </ul>
+            </div>
 		</div>
-	);
+    )
 }
-export default Dashboard;
+
+export default Contact;

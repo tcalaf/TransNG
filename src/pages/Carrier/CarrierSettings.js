@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { doc, getDoc } from "firebase/firestore";
+import {db} from "../../firebase";
 
 const CarrierSettings=(props)=>{
+    const [phone, setPhone] = useState("");
+
+    const fetchData = useCallback(async () => {
+        try {
+            const docRef = doc(db, "users", props.uid);
+            const docSnap = await getDoc(docRef);      
+            setPhone(docSnap.data().phone);
+		} catch (err) {
+			console.error(err);
+			alert("An error occured while fetching user data");
+		}
+	},[props.uid]);
+
+    useEffect(() => {
+        fetchData();
+    })
+
+
     return(
         <Form>
         <h2>Settings</h2>
@@ -33,7 +53,7 @@ const CarrierSettings=(props)=>{
                 Name
                 </Form.Label>
                 <Col sm="10">
-                <Form.Control type="email" defaultValue={props.name} />
+                <Form.Control type="text" defaultValue={props.name} />
                 </Col>
             </Form.Group>
 
@@ -42,11 +62,17 @@ const CarrierSettings=(props)=>{
                 Phone
                 </Form.Label>
                 <Col sm="10">
-                <Form.Control type="phone" placeholder="+40712345678 (optional)" />
+                {
+                    phone === "" ? (
+                        <Form.Control type="phone" placeholder="ex: +40712345678 (optional)" />
+                    ) : (
+                        <Form.Control type="phone" defaultValue={phone} />
+                    )
+                }
                 </Col>
             </Form.Group>
 
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" onClick={() => console.log("Hey")}>
                 Save
             </Button>
             
@@ -54,6 +80,10 @@ const CarrierSettings=(props)=>{
             <p>TODO: Show added trucks here</p>
 
             <h3>New Truck</h3>
+            <Form.Group className="mb-3" controlId="formGridAddress1">
+                <Form.Label>Licence Plate:</Form.Label>
+                <Form.Control placeholder="B 123 TNG" />
+            </Form.Group>
             <Form.Group className="mb-3" controlId="formGridAddress1">
                 <Form.Label>Truck Model:</Form.Label>
                 <Form.Control placeholder="2021 Volvo FH16, D16 Engine, 650 HP" />
