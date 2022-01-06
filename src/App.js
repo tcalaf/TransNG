@@ -4,6 +4,8 @@ import Register from "./pages/Register";
 import Reset from "./pages/Reset";
 import Dashboard from "./pages/Dashboard";
 import Contact from "./pages/Contact";
+import esriConfig from "@arcgis/core/config";
+import { useEffect } from "react";
 
 function App() {
 
