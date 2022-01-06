@@ -8,6 +8,68 @@ import {db} from "../../firebase";
 
 const CarrierSettings=(props)=>{
     const [phone, setPhone] = useState("");
+    const [licencePlate, setLicencePlate] = useState("");
+    const [model, setModel] = useState("");
+    const [maxVolume, setMaxVolume] = useState(-1);
+    const [maxWeight, setMaxWeight] = useState(-1);
+    const [length, setLength] = useState(-1);
+    const [width, setWidth] = useState(-1);
+    const [height, setHeight] = useState(-1);
+    const [hasSleepingCabin, setHasSleepingCabin] = useState(false);
+
+
+    const onlyDigits = (evt) => {
+        if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
+        {
+            evt.preventDefault();
+        }
+    }
+
+    const addTruck = () => {
+        if (licencePlate === "") {
+            alert("Please enter Licence Plate");
+            return;
+        } else if (model === "") {
+            alert("Please enter Truck Model");
+            return;
+        } else if (maxVolume <= 0) {
+            alert("Please enter Max Load Volume");
+            return;
+        } else if (maxWeight <= 0) {
+            alert("Please enter Max Load Weight:");
+            return;
+        } else if (length <= 0) {
+            alert("Please enter length");
+            return;
+        } else if (width <= 0) {
+            alert("Please enter width");
+            return;
+        } else if (height <= 0) {
+            alert("Please enter height");
+            return;
+        } else if (model === "") {
+            alert("Please check model");
+            return;
+        }
+        db.collection("users").doc(props.uid).collection("trucks").add({
+            licence_plate: licencePlate,
+            model: model,
+            max_volume: maxVolume,
+            max_weight: maxWeight,
+            length: length,
+            width: width,
+            height: height,
+            has_sleeping_cabin: hasSleepingCabin
+        })
+        .then((docRef) => {
+            alert("Truck added with ID: " + docRef.id)
+            console.log("Document written with ID: ", docRef.id);
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+        });
+    }
+
 
     const fetchData = useCallback(async () => {
         try {
@@ -16,7 +78,6 @@ const CarrierSettings=(props)=>{
             setPhone(docSnap.data().phone);
 		} catch (err) {
 			console.error(err);
-			alert("An error occured while fetching user data");
 		}
 	},[props.uid]);
 
@@ -82,11 +143,11 @@ const CarrierSettings=(props)=>{
             <h3>New Truck</h3>
             <Form.Group className="mb-3" controlId="formGridAddress1">
                 <Form.Label>Licence Plate:</Form.Label>
-                <Form.Control placeholder="B 123 TNG" />
+                <Form.Control placeholder="B 123 TNG" onChange={(e) => setLicencePlate(e.target.value)}/>
             </Form.Group>
             <Form.Group className="mb-3" controlId="formGridAddress1">
                 <Form.Label>Truck Model:</Form.Label>
-                <Form.Control placeholder="2021 Volvo FH16, D16 Engine, 650 HP" />
+                <Form.Control placeholder="2021 Volvo FH16, D16 Engine, 650 HP" onChange={(e) => setModel(e.target.value)}/>
             </Form.Group>
             <Row className="mb-3">
                 <Form.Group as={Col} controlId="formGridText">
@@ -105,17 +166,17 @@ const CarrierSettings=(props)=>{
                 </Form.Text>
                 <Form.Group as={Col} controlId="formGridEmail">
                 <Form.Label>Length</Form.Label>
-                <Form.Control type="text" placeholder="e.g.: 17,25" />
+                <Form.Control type="number" step="0.01" placeholder="e.g.: 17.34" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setLength(e.target.valueAsNumber)}/>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridPassword">
                 <Form.Label>Width</Form.Label>
-                <Form.Control type="text" placeholder="e.g.: 2,45" />
+                <Form.Control type="number" step="0.01" placeholder="e.g.: 2.45" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setWidth(e.target.valueAsNumber)}/>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridPassword">
                 <Form.Label>Height</Form.Label>
-                <Form.Control type="text" placeholder="e.g.: 3,85" />
+                <Form.Control type="number" step="0.01" placeholder="e.g.: 3.23" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setHeight(e.target.valueAsNumber)}/>
                 </Form.Group>
             </Row>
             <Row className="mb-3">
@@ -124,19 +185,19 @@ const CarrierSettings=(props)=>{
                 </Form.Text>
                 <Form.Group as={Col} controlId="formGridText">
                 <Form.Label>Max Load Volume:</Form.Label>
-                <Form.Control type="text" placeholder="e.g.: 120" />
+                <Form.Control type="number" step="0.01" placeholder="e.g.: 120" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => {setMaxVolume(e.target.valueAsNumber);}}/>
                 </Form.Group>
 
                 <Form.Group as={Col} controlId="formGridText">
                 <Form.Label>Max Load Weight:</Form.Label>
-                <Form.Control type="text" placeholder="e.g.: 25000" />
+                <Form.Control type="number" step="0.01" placeholder="e.g.: 25000" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setMaxWeight(e.target.valueAsNumber)}/>
                 </Form.Group>
             </Row>
             <Form.Group className="mb-3" id="formGridCheckbox">
-                <Form.Check type="checkbox" label="Has sleeping cabin" />
+                <Form.Check type="checkbox" label="Has sleeping cabin"  onChange={(e) => setHasSleepingCabin(prevValue => !prevValue)}/>
             </Form.Group>
 
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" onClick={(e) => {e.preventDefault(); addTruck();}}>
                 Add Truck
             </Button>
         </Form>
