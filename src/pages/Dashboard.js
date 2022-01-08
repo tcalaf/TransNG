@@ -80,7 +80,7 @@ function Dashboard() {
 				</Navbar.Collapse>
 				</Container>
 			</Navbar>
-			<div class="column menu">
+			<div className="column menu">
 				{
 					role === "Client" ? (
 						<ClientSettings value={name}/>
@@ -89,7 +89,7 @@ function Dashboard() {
 					)
 				}
 			</div>
-			<div class="divmap" style={{backgroundColor:"#ADD8E6"}}>
+			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
 				<UserMap />
 			</div>
 		</div>
