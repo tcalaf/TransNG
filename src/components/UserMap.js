@@ -4,7 +4,7 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { getNewSupplyRouteDetails, getDBSupplies, newTruckGraphic } from './utils';
+import { fetchRouteDetails, getDBSupplies, newTruckGraphic } from './utils';
 
 const UserMap = () => {
     const mapDiv = useRef(null);
@@ -36,7 +36,7 @@ const UserMap = () => {
           x)
       });
       
-      getNewSupplyRouteDetails(supplies[0]).then((val) => {
+      fetchRouteDetails(supplies[0], [{start_place: "Beverly Hills", finish_place: "Inglewood"}]).then((val) => {
         console.log(val);
         setView(new MapView({
           container: mapDiv.current,

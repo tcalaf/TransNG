@@ -11,9 +11,7 @@ const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World
 
 export const addressesToCoordinates = async (addresses) => {
     const coordinates = [];
-    console.log(addresses)
     for (const addr of addresses) {
-        console.log(addr)
         const results = await locator.addressToLocations(
             locatorUrl, {
             address: {"SingleLine": addr}
@@ -24,6 +22,7 @@ export const addressesToCoordinates = async (addresses) => {
             y: results[0].location.y
         });
     }
+    console.log(coordinates);
     return coordinates;
 };
 
@@ -100,52 +99,75 @@ export const getDBSupplies = () => {
 }
 
 
-// supply is data from db
-export const getNewSupplyRouteDetails = async (supply) => {
-    const depotsCoords = await addressesToCoordinates([supply.start_place, supply.finish_place]);
-    const depots = new FeatureSet({
-        features: [
-            {
-                attributes: {Name: supply.start_place},
-                geometry: {type: "point", ...depotsCoords[0]}
-            }, {
-                attributes: {Name: supply.finish_place},
-                geometry: {type: "point", ...depotsCoords[1]}
+// supply is data from db, demands is array of demands as from db
+export const fetchRouteDetails = async (supply, demands) => {
+    const locations = [supply.start_place, supply.finish_place];
+    for (const d of demands) {
+        locations.push(d.start_place);
+        locations.push(d.finish_place);
+    }
+    const coords = await addressesToCoordinates(locations);
+
+    const depots = [
+        {
+            attributes: {Name: supply.start_place},
+            geometry: {type: "point", ...coords[0]}
+        },
+        {
+            attributes: {Name: supply.finish_place},
+            geometry: {type: "point", ...coords[1]}
+        }
+    ];
+    const order_pairs = [];
+    const orders = [{
+        attributes: {Name: supply.finish_place},
+        geometry: {type: "point", ...coords[1]}
+    }];
+
+    for (let i = 2; i < locations.length; i = i + 2) {
+        order_pairs.push({
+            attributes: {
+                FirstOrderName: locations[i],
+                SecondOrderName: locations[i+1]
             }
-        ]
+        });
+
+        orders.push({
+            attributes: {
+                Name: locations[i],
+                DeliveryQuantities: null,
+                PickupQuantities: 1
+            },
+            geometry: {type: "point", ...coords[i]}
+        });
+        orders.push({
+            attributes: {
+                Name: locations[i+1],
+                PickupQuantities: null,
+                DeliveryQuantities: 1
+            },
+            geometry: {type: "point", ...coords[i+1]}
+        });
+    }
+
+    const routes = new FeatureSet({
+        features: [{
+            attributes: {
+                Name: "Route 1",
+                Description: "vehicle 1",
+                StartDepotName: supply.start_place,
+                EndDepotName: supply.finish_place,
+                Capacities: "4",
+            }
+        }]
     });
 
-    const orders = new FeatureSet({
-        features: [
-          {
-            attributes: {Name: supply.finish_place},
-            geometry: {type: "point", ...depotsCoords[1]}
-          }
-        ],
-      });
-
-      const routes = new FeatureSet({
-        features: [
-          {
-            attributes: {
-              Name: "Route 1",
-              Description: "vehicle 1",
-              StartDepotName: supply.start_place,
-              EndDepotName: supply.finish_place,
-              Capacities: "4",
-              MaxOrderCount: 3,
-              MaxTotalTime: 60,
-            }
-          }
-        ]
-      });
-
-
-      const params = {
-        orders,
-        depots,
-        routes
-      };
+    const params = {
+        orders: new FeatureSet({features: orders}),
+        depots: new FeatureSet({features: depots}),
+        routes,
+        order_pairs: new FeatureSet({features: order_pairs})
+    };
 
     return await geoprocessor.execute(fleetRoutingUrl, params);
 }
