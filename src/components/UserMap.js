@@ -6,25 +6,26 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
 import { fetchRouteDetails, getDBSupplies, newTruckGraphic } from './utils';
 
+const getRandomInt = (max) => {
+  return Math.floor(Math.random() * max);
+}
+
+const getRouteLayer = (features) => {
+  const routeLayer = new GraphicsLayer();
+  for (let f of features) {
+    f.symbol = {
+      type: "simple-line",
+      color: [getRandomInt(200), getRandomInt(200), getRandomInt(200), 0.75],
+      width: "4px"
+    }
+  }
+  routeLayer.addMany(features);
+  return routeLayer;
+}
+
 const UserMap = () => {
     const mapDiv = useRef(null);
     const [view, setView] = useState(null);
-
-    function showRoutes(routes) {
-      const routeLayer = new GraphicsLayer();
-      for (let route of routes) {
-        route.symbol = {
-          type: "simple-line",
-          color:
-            route.attributes.Name === "Route 1"
-              ? [50, 150, 255, 0.75]
-              : [180, 69, 255, 0.75],
-          width: "4px"
-        }
-      }
-      routeLayer.addMany(routes);
-      return routeLayer;
-    }
 
     // Init map parameters.
     useEffect(() => {
@@ -47,7 +48,7 @@ const UserMap = () => {
                 id: "Trucks Points",
                 graphics: suppliesGraphics
               }),
-              showRoutes(val.results[2].value.features)
+              getRouteLayer(val.results[2].value.features)
             ]
           }),
           scale: 1000000,
