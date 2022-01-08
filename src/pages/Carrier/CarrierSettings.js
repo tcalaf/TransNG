@@ -5,6 +5,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { doc, getDoc } from "firebase/firestore";
 import {db} from "../../firebase";
+import Truck from './Truck'
 
 const CarrierSettings=(props)=>{
     const [phone, setPhone] = useState("");
@@ -16,6 +17,7 @@ const CarrierSettings=(props)=>{
     const [width, setWidth] = useState(-1);
     const [height, setHeight] = useState(-1);
     const [hasSleepingCabin, setHasSleepingCabin] = useState(false);
+    // const [trucks, setTrucks] = useState();
 
 
     const onlyDigits = (evt) => {
@@ -26,29 +28,38 @@ const CarrierSettings=(props)=>{
     }
 
     const addTruck = () => {
+        var hasEmptyField = false
+        var emptyFields = "Please enter:\n"
         if (licencePlate === "") {
-            alert("Please enter Licence Plate");
-            return;
-        } else if (model === "") {
-            alert("Please enter Truck Model");
-            return;
-        } else if (maxVolume <= 0) {
-            alert("Please enter Max Load Volume");
-            return;
-        } else if (maxWeight <= 0) {
-            alert("Please enter Max Load Weight:");
-            return;
-        } else if (length <= 0) {
-            alert("Please enter length");
-            return;
-        } else if (width <= 0) {
-            alert("Please enter width");
-            return;
-        } else if (height <= 0) {
-            alert("Please enter height");
-            return;
-        } else if (model === "") {
-            alert("Please check model");
+            emptyFields += "- Licence Plate\n"
+            hasEmptyField = true
+        }
+        if (model === "") {
+            emptyFields += "- Truck Model\n"
+            hasEmptyField = true
+        }
+        if (length <= 0) {
+            emptyFields += "- Length\n"
+            hasEmptyField = true
+        }
+        if (width <= 0) {
+            emptyFields += "- Width\n"
+            hasEmptyField = true
+        }
+        if (height <= 0) {
+            emptyFields += "- Height\n"
+            hasEmptyField = true
+        }
+        if (maxVolume <= 0) {
+            emptyFields += "- Max Load Volume\n"
+            hasEmptyField = true
+        }
+        if (maxWeight <= 0) {
+            emptyFields += "- Max Load Weight\n"
+            hasEmptyField = true
+        }
+        if (hasEmptyField) {
+            alert(emptyFields);
             return;
         }
         db.collection("users").doc(props.uid).collection("trucks").add({
@@ -76,6 +87,11 @@ const CarrierSettings=(props)=>{
             const docRef = doc(db, "users", props.uid);
             const docSnap = await getDoc(docRef);      
             setPhone(docSnap.data().phone);
+            // const trucksQuery = await db.collection("users/" + props.uid + "/trucks").get();
+            // setTrucks(trucksQuery);
+            // console.log(trucksQuery.size)
+			// console.log(trucksQuery.docs[4].data());
+            // db.collection("users/" + props.uid + "/trucks").get().docs[4].data()
 		} catch (err) {
 			console.error(err);
 		}
@@ -138,7 +154,8 @@ const CarrierSettings=(props)=>{
             </Button>
             
             <h3>My Trucks</h3>
-            <p>TODO: Show added trucks here</p>
+            {/* <p>TODO: Show added trucks here {db.collection("users/" + props.uid + "/trucks").get().docs[4].data()}</p> */}
+            <Truck></Truck>
 
             <h3>New Truck</h3>
             <Form.Group className="mb-3" controlId="formGridAddress1">
@@ -149,17 +166,6 @@ const CarrierSettings=(props)=>{
                 <Form.Label>Truck Model:</Form.Label>
                 <Form.Control placeholder="2021 Volvo FH16, D16 Engine, 650 HP" onChange={(e) => setModel(e.target.value)}/>
             </Form.Group>
-            <Row className="mb-3">
-                <Form.Group as={Col} controlId="formGridText">
-                <Form.Label>Driver Name:</Form.Label>
-                <Form.Control type="text" defaultValue={props.name} />
-                </Form.Group>
-
-                <Form.Group as={Col} controlId="formGridText">
-                <Form.Label>Driver Phone:</Form.Label>
-                <Form.Control type="text" placeholder="+40712345678" />
-                </Form.Group>
-            </Row>
             <Row className="mb-3">
                 <Form.Text className="text-muted">
                 Enter trailer dimensions in meters:

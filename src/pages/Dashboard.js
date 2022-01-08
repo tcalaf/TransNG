@@ -28,6 +28,9 @@ function Dashboard() {
 			const data = query.docs[0].data();
 			setName(data.name);
 			setRole(data.role);
+			const trucksQuery = await db.collection("users/" + user?.uid + "/trucks").get();
+			// setTrucks(trucksQuery);
+			console.log(trucksQuery.docs[4].data());
 		} catch (err) {
 			console.error(err);
 			alert("An error occured while fetching user data");
