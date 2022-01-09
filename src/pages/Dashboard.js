@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
@@ -22,21 +22,6 @@ function Dashboard() {
 	const [role, setRole] = useState("");
 	const history = useHistory();
 
-	const fetchData = useCallback(async () => {
-		try {
-			const query = await db.collection("users").where("uid", "==", user?.uid).get();
-			const data = query.docs[0].data();
-			setName(data.name);
-			setRole(data.role);
-			const trucksQuery = await db.collection("users/" + user?.uid + "/trucks").get();
-			// setTrucks(trucksQuery);
-			console.log(trucksQuery.docs[4].data());
-		} catch (err) {
-			console.error(err);
-			alert("An error occured while fetching user data");
-		}
-	},[user?.uid]);
-
 	useEffect(() => {
 		if (loading) {
 			return (
@@ -55,8 +40,20 @@ function Dashboard() {
 		if (!user) {
 			return history.replace("/");
 		}
+		async function fetchData() {
+			try {
+				const query = await db.collection("users").where("uid", "==", user?.uid).get();
+				const data = query.docs[0].data();
+				setName(data.name);
+				setRole(data.role);
+				console.log(data.name);
+			} catch (err) {
+				console.error(err);
+				alert("An error occured while fetching user data");
+			}			
+		}
 		fetchData();
-	}, [user, loading, error, history, fetchData]);
+	}, [user, loading, error]);
 
 	return (
 		<div>

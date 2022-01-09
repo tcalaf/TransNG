@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
@@ -17,7 +17,7 @@ const CarrierSettings=(props)=>{
     const [width, setWidth] = useState(-1);
     const [height, setHeight] = useState(-1);
     const [hasSleepingCabin, setHasSleepingCabin] = useState(false);
-    // const [trucks, setTrucks] = useState();
+    const [trucks, setTrucks] = useState();
 
 
     const onlyDigits = (evt) => {
@@ -82,24 +82,26 @@ const CarrierSettings=(props)=>{
     }
 
 
-    const fetchData = useCallback(async () => {
-        try {
-            const docRef = doc(db, "users", props.uid);
-            const docSnap = await getDoc(docRef);      
-            setPhone(docSnap.data().phone);
-            // const trucksQuery = await db.collection("users/" + props.uid + "/trucks").get();
-            // setTrucks(trucksQuery);
-            // console.log(trucksQuery.size)
-			// console.log(trucksQuery.docs[4].data());
-            // db.collection("users/" + props.uid + "/trucks").get().docs[4].data()
-		} catch (err) {
-			console.error(err);
-		}
-	},[props.uid]);
-
     useEffect(() => {
+        async function fetchData() {
+            try {
+                const docRef = doc(db, "users", props.uid);
+                const docSnap = await getDoc(docRef);      
+                setPhone(docSnap.data().phone);
+                const trucksCollectionRef = db.collection("users").doc(props.uid).collection("trucks");
+                const trucksSnap = await trucksCollectionRef.get();
+                const allTrucks = trucksSnap.docs.map(truckDoc => ({
+                    ...truckDoc.data(),
+                    id: truckDoc.id,
+                }));
+                setTrucks(allTrucks);
+                console.log(trucks);
+            } catch (err) {
+                console.error(err);
+            }          
+        };
         fetchData();
-    })
+    }, [])
 
 
     return(
@@ -154,7 +156,7 @@ const CarrierSettings=(props)=>{
             </Button>
             
             <h3>My Trucks</h3>
-            {/* <p>TODO: Show added trucks here {db.collection("users/" + props.uid + "/trucks").get().docs[4].data()}</p> */}
+            <p>TODO: Show added trucks here </p>
             <Truck></Truck>
 
             <h3>New Truck</h3>
