@@ -3,7 +3,6 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { doc, getDoc } from "firebase/firestore";
 import {db} from "../../firebase";
 import Truck from './Truck'
 
@@ -85,9 +84,10 @@ const CarrierSettings=(props)=>{
     useEffect(() => {
         async function fetchData() {
             try {
-                const docRef = doc(db, "users", props.uid);
-                const docSnap = await getDoc(docRef);      
-                setPhone(docSnap.data().phone);
+                const userRef = await db.collection("users").doc(props.uid);
+                const userSnap = await userRef.get();
+                setPhone(userSnap.data().phone);
+
                 const trucksCollectionRef = db.collection("users").doc(props.uid).collection("trucks");
                 const trucksSnap = await trucksCollectionRef.get();
                 const allTrucks = trucksSnap.docs.map(truckDoc => ({
@@ -95,6 +95,8 @@ const CarrierSettings=(props)=>{
                     id: truckDoc.id,
                 }));
                 setTrucks(allTrucks);
+
+                console.log(phone);
                 console.log(trucks);
             } catch (err) {
                 console.error(err);

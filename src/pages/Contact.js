@@ -11,30 +11,13 @@ import logo from './../assets/delivery_light.png';
 import CarrierHeader from "./Carrier/CarrierHeader";
 import ClientHeader from "./Client/ClientHeader";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import ClientSettings from "./Client/ClientSettings";
-import CarrierSettings from "./Carrier/CarrierSettings";
-import AdminSettings from "./Admin/AdminSettings";
 import AdminHeader from "./Admin/AdminHeader";
-import UserMap from "../components/UserMap";
-import { Row } from "react-bootstrap";
 
 const Contact=()=>{
     const [user, loading, error] = useAuthState(auth);
+	const history = useHistory();
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
-	const history = useHistory();
-    
-    const fetchData = useCallback(async () => {
-		try {
-			const query = await db.collection("users").where("uid", "==", user?.uid).get();
-			const data = query.docs[0].data();
-			setName(data.name);
-			setRole(data.role);
-		} catch (err) {
-			console.error(err);
-			alert("An error occured while fetching user data");
-		}
-	},[user?.uid]);
 
 	useEffect(() => {
 		if (loading) {
@@ -54,8 +37,21 @@ const Contact=()=>{
 		if (!user) {
 			return history.replace("/");
 		}
+		async function fetchData() {
+			try {
+				const userRef = await db.collection("users").doc(user?.uid);
+				const userSnap = await userRef.get();
+				const data = userSnap.data();
+				setName(data.name);
+				setRole(data.role);
+				console.log(data.name);
+			} catch (err) {
+				console.error(err);
+				alert("An error occured while fetching user data");
+			}			
+		}
 		fetchData();
-	}, [user, loading, error, history, fetchData]);
+	}, [user, loading, error]);
 
     return(
         <div>

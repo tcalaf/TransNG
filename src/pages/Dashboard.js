@@ -42,8 +42,9 @@ function Dashboard() {
 		}
 		async function fetchData() {
 			try {
-				const query = await db.collection("users").where("uid", "==", user?.uid).get();
-				const data = query.docs[0].data();
+				const userRef = await db.collection("users").doc(user?.uid);
+				const userSnap = await userRef.get();
+				const data = userSnap.data();
 				setName(data.name);
 				setRole(data.role);
 				console.log(data.name);
