@@ -37,6 +37,7 @@ const registerWithEmailAndPassword = async (name, role, email, password) => {
 				name,
 				role,
 				email,
+				phone: "",
 			}	
 		);
 	} catch (err) {

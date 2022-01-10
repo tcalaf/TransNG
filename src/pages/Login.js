@@ -29,7 +29,7 @@ function Login() {
 		if (user) {
 			history.replace("/dashboard");
 		}
-	}, [user, loading, error, history]);
+	}, [user, loading, error]);
 
 	return (
 		<div className="login">

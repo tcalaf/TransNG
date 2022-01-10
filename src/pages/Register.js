@@ -38,7 +38,7 @@ function Register() {
 		if (user) {
 			history.replace("/dashboard");
 		}
-	}, [user, loading, error, history, role]);
+	}, [user, loading, error]);
 
 	return (
 	<div className="register">
