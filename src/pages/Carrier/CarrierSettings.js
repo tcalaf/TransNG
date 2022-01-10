@@ -16,7 +16,7 @@ const CarrierSettings=(props)=>{
     const [width, setWidth] = useState(-1);
     const [height, setHeight] = useState(-1);
     const [hasSleepingCabin, setHasSleepingCabin] = useState(false);
-    const [trucks, setTrucks] = useState();
+    const [trucks, setTrucks] = useState([]);
 
 
     const onlyDigits = (evt) => {
@@ -158,7 +158,15 @@ const CarrierSettings=(props)=>{
             </Button>
             
             <h3>My Trucks</h3>
-            <p>TODO: Show added trucks here </p>
+            {
+                trucks.map((truck) => (
+                    <React.Fragment key={truck.id}>
+                        <div>
+                            <h3>{truck.licence_plate}</h3>
+                        </div>
+                    </React.Fragment>
+                ))
+            }
             <Truck></Truck>
 
             <h3>New Truck</h3>
