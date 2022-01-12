@@ -27,7 +27,8 @@ const Truck=(props)=>{
                     }
                 </ListGroup>
                 <Card.Body>
-                    <Card.Link href="#">Edit Truck</Card.Link>
+                    <Card.Link href="#">Edit</Card.Link>
+                    <Card.Link href="#" style={{ color: 'red' }}>Delete</Card.Link>
                 </Card.Body>
                 </Card>
                 <p></p>
