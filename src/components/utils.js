@@ -1,29 +1,31 @@
 import * as locator from "@arcgis/core/rest/locator";
 import * as geoprocessor from "@arcgis/core/rest/geoprocessor";
+import * as route from "@arcgis/core/rest/route";
 import Graphic from "@arcgis/core/Graphic";
 import Point from "@arcgis/core/geometry/Point";
 import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol";
 import PopupTemplate from "@arcgis/core/PopupTemplate";
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet";
+import RouteParameters from "@arcgis/core/rest/support/RouteParameters";
 
 const locatorUrl = "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
 const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World/VehicleRoutingProblemSync/GPServer/EditVehicleRoutingProblem";
+const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 export const addressesToCoordinates = async (addresses) => {
-    const coordinates = [];
-    for (const addr of addresses) {
-        const results = await locator.addressToLocations(
-            locatorUrl, {
-            address: {"SingleLine": addr}
-        });
-        
-        coordinates.push({
-            x: results[0].location.x,
-            y: results[0].location.y
-        });
-    }
-    console.log(coordinates);
-    return coordinates;
+  const coordinates = [];
+  for (const addr of addresses) {
+    const results = await locator.addressToLocations(
+        locatorUrl, {
+        address: {"SingleLine": addr}
+    });
+    
+    coordinates.push({
+        x: results[0].location.x,
+        y: results[0].location.y
+    });
+  }
+  return coordinates;
 };
 
 export const newTruckGraphic = (coords, color, attributes = {}) => {
@@ -73,7 +75,7 @@ export const newTruckGraphic = (coords, color, attributes = {}) => {
       })
     })
   }
-  
+
 export const getDBSupplies = () => {
     // TODO: replace with db call to supplies
     let supplies = [
@@ -83,7 +85,9 @@ export const getDBSupplies = () => {
         start_place: "Malibu",
         finish_date: "22 Jan 2022 04:00:00",
         finish_place: "Los Angeles International Airport",
-        current_place: '{"x": -118.475, "y": 34.026}'
+        current_place: '{"x": -118.475, "y": 34.026}',
+        empty_price_per_km: 10,
+        full_price_per_km: 20
         },
         {
         id_truck: "smth2",
@@ -170,4 +174,22 @@ export const fetchRouteDetails = async (supply, demands) => {
     };
 
     return await geoprocessor.execute(fleetRoutingUrl, params);
+}
+
+export const getDrivingDistance = async (coords) => {
+  const r = await route.solve(routeUrl, new RouteParameters({
+    stops: new FeatureSet({
+      features: coords.map((c) => {
+        return {geometry: new Point(c)}
+      })
+    })
+  }));
+  return r.routeResults[0].route.attributes.Total_Kilometers;
+}
+
+export const getClientRouteCost = async (supply, demand) => {
+  const coords = await addressesToCoordinates([supply.start_place, demand.start_place, demand.finish_place]);
+  const d1 = await getDrivingDistance(coords.slice(0, 2));
+  const d2 = await getDrivingDistance(coords.slice(1));
+  return d1*supply.empty_price_per_km + d2*supply.full_price_per_km;
 }
