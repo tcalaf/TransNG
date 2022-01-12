@@ -4,7 +4,7 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { fetchRouteDetails, getClientRouteCost, getDBSupplies, getDrivingDistance, newTruckGraphic } from './utils';
+import { fetchRouteDetails, getContractCost, getDBSupplies, newTruckGraphic } from './utils';
 
 const getRandomInt = (max) => {
   return Math.floor(Math.random() * max);
@@ -55,7 +55,7 @@ const UserMap = () => {
         }));
       });
 
-      getClientRouteCost(supplies[0], {start_place: "Beverly Hills", finish_place: "Inglewood"}).then((aaa) => {
+      getContractCost(supplies[0], {start_place: "Beverly Hills", finish_place: "Inglewood"}).then((aaa) => {
         console.log(aaa)
       });
 

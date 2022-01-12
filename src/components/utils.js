@@ -187,7 +187,7 @@ export const getDrivingDistance = async (coords) => {
   return r.routeResults[0].route.attributes.Total_Kilometers;
 }
 
-export const getClientRouteCost = async (supply, demand) => {
+export const getContractCost = async (supply, demand) => {
   const coords = await addressesToCoordinates([supply.start_place, demand.start_place, demand.finish_place]);
   const d1 = await getDrivingDistance(coords.slice(0, 2));
   const d2 = await getDrivingDistance(coords.slice(1));
