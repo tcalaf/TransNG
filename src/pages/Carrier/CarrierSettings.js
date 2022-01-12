@@ -160,14 +160,19 @@ const CarrierSettings=(props)=>{
             <h3>My Trucks</h3>
             {
                 trucks.map((truck) => (
-                    <React.Fragment key={truck.id}>
-                        <div>
-                            <h3>{truck.licence_plate}</h3>
-                        </div>
-                    </React.Fragment>
+                    <Truck
+                        licence_plate={truck.licence_plate}
+                        model={truck.model}
+                        length={truck.length}
+                        width={truck.width}
+                        height={truck.height}
+                        max_volume={truck.max_volume}
+                        max_weight={truck.max_weight}
+                        has_sleeping_cabin={truck.has_sleeping_cabin}
+                    >
+                    </Truck>
                 ))
             }
-            <Truck></Truck>
 
             <h3>New Truck</h3>
             <Form.Group className="mb-3" controlId="formGridAddress1">
