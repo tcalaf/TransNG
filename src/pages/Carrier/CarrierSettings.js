@@ -157,20 +157,23 @@ const CarrierSettings=(props)=>{
                 Save
             </Button>
             
+            <p></p>
             <h3>My Trucks</h3>
             {
                 trucks.map((truck) => (
-                    <Truck
-                        licence_plate={truck.licence_plate}
-                        model={truck.model}
-                        length={truck.length}
-                        width={truck.width}
-                        height={truck.height}
-                        max_volume={truck.max_volume}
-                        max_weight={truck.max_weight}
-                        has_sleeping_cabin={truck.has_sleeping_cabin}
-                    >
-                    </Truck>
+                    <React.Fragment key={truck.id}>
+                        <Truck
+                            licence_plate={truck.licence_plate}
+                            model={truck.model}
+                            length={truck.length}
+                            width={truck.width}
+                            height={truck.height}
+                            max_volume={truck.max_volume}
+                            max_weight={truck.max_weight}
+                            has_sleeping_cabin={truck.has_sleeping_cabin}
+                        >
+                        </Truck>
+                    </React.Fragment>
                 ))
             }
 
