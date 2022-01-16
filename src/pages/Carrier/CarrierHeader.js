@@ -5,7 +5,8 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 const CarrierHeader=()=>{
     return(
         <React.Fragment>
-        <Nav.Link href="#newoffers">New Offers</Nav.Link>
+        <Nav.Link href="/newoffers">New Offers</Nav.Link>
+        <Nav.Link href="/trip/new">New Trip</Nav.Link>
         <NavDropdown title="My Transports" id="collasible-nav-dropdown">
             <NavDropdown.Item href="#transport/1">B100TNG Arad-Bucuresti</NavDropdown.Item>
             <NavDropdown.Item href="#transport/2">B200TNG Bucuresti-Constanta</NavDropdown.Item>

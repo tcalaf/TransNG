@@ -60,7 +60,7 @@ function Dashboard() {
 		<div>
 			<Navbar collapseOnSelect expand="lg" bg="dark" variant="dark" style={{height:"4vh"}}>
 				<Container>
-				<Navbar.Brand href="#home">
+				<Navbar.Brand href="/dashboard">
 					<img src={logo} alt="TransNG Logo" width="30" height="30"/>{' '}TransNG
 				</Navbar.Brand>
 				<Navbar.Toggle aria-controls="responsive-navbar-nav" />
