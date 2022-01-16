@@ -116,6 +116,17 @@ function Dashboard() {
                         <Form.Control type="text" placeholder="0.5" />
                         </Form.Group>
                     </Row>
+                    <Row className="mb-3">
+                        <Form.Group as={Col} controlId="formGridText">
+                        <Form.Label>Contact Mail:</Form.Label>
+                        <Form.Control type="text" placeholder="johnsimth@carrier.com" />
+                        </Form.Group>
+
+                        <Form.Group as={Col} controlId="formGridText">
+                        <Form.Label>Contact Phone:</Form.Label>
+                        <Form.Control type="text" placeholder="+40712345678" />
+                        </Form.Group>
+                    </Row>
 
                     <Button variant="primary" type="submit">
                         Add Trip
