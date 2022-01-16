@@ -1,25 +1,39 @@
 import React from 'react';
+import ListGroup from 'react-bootstrap/ListGroup';
+import ListGroupItem from 'react-bootstrap/ListGroupItem';
+import Card from 'react-bootstrap/Card';
 
 const Truck=(props)=>{
     return(
-        // <div class="card" style="width: 18rem;">
-        //     <div class="card-body">
-        //         <h5 class="card-title">Card title</h5>
-        //         <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-        //     </div>
-        //     <ul class="list-group list-group-flush">
-        //         <li class="list-group-item">Cras justo odio</li>
-        //         <li class="list-group-item">Dapibus ac facilisis in</li>
-        //         <li class="list-group-item">Vestibulum at eros</li>
-        //     </ul>
-        //     <div class="card-body">
-        //         <a href="#cardlink" class="card-link">Card link</a>
-        //         <a href="#anotherlink" class="card-link">Another link</a>
-        //     </div>
-        // </div>
-        <>
-            <p>Hello from Truck component</p>
-        </>
+        <React.Fragment>
+            <>
+                <Card style={{ width: '18rem' }}>
+                <Card.Body>
+                    <Card.Title>{props.model}</Card.Title>
+                    <Card.Text>{props.licence_plate}</Card.Text>
+                </Card.Body>
+                <ListGroup className="list-group-flush">
+                    <ListGroupItem>Length: {props.length}m</ListGroupItem>
+                    <ListGroupItem>Width: {props.width}m</ListGroupItem>
+                    <ListGroupItem>Height: {props.height}m</ListGroupItem>
+                    <ListGroupItem>Max Load Volume: {props.width}m³</ListGroupItem>
+                    <ListGroupItem>Max Load Weight: {props.height}kg</ListGroupItem>
+                    {
+                        props.has_sleeping_cabin === true ? (
+                            <ListGroupItem>Has Sleeping Cabin: Yes</ListGroupItem>
+                        ) :  (						
+                            <ListGroupItem>Has Sleeping Cabin: No</ListGroupItem>
+                        )
+                    }
+                </ListGroup>
+                <Card.Body>
+                    <Card.Link href="#">Edit</Card.Link>
+                    <Card.Link href="#" style={{ color: 'red' }}>Delete</Card.Link>
+                </Card.Body>
+                </Card>
+                <p></p>
+            </>
+        </React.Fragment>
     )
 }
 

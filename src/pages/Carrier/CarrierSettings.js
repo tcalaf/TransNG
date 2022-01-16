@@ -16,7 +16,7 @@ const CarrierSettings=(props)=>{
     const [width, setWidth] = useState(-1);
     const [height, setHeight] = useState(-1);
     const [hasSleepingCabin, setHasSleepingCabin] = useState(false);
-    const [trucks, setTrucks] = useState();
+    const [trucks, setTrucks] = useState([]);
 
 
     const onlyDigits = (evt) => {
@@ -157,9 +157,25 @@ const CarrierSettings=(props)=>{
                 Save
             </Button>
             
+            <p></p>
             <h3>My Trucks</h3>
-            <p>TODO: Show added trucks here </p>
-            <Truck></Truck>
+            {
+                trucks.map((truck) => (
+                    <React.Fragment key={truck.id}>
+                        <Truck
+                            licence_plate={truck.licence_plate}
+                            model={truck.model}
+                            length={truck.length}
+                            width={truck.width}
+                            height={truck.height}
+                            max_volume={truck.max_volume}
+                            max_weight={truck.max_weight}
+                            has_sleeping_cabin={truck.has_sleeping_cabin}
+                        >
+                        </Truck>
+                    </React.Fragment>
+                ))
+            }
 
             <h3>New Truck</h3>
             <Form.Group className="mb-3" controlId="formGridAddress1">

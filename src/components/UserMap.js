@@ -4,7 +4,11 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
+<<<<<<< HEAD
 import { fetchRouteDetails, getDBSupplies, newTruckGraphic } from './utils';
+=======
+import { fetchRouteDetails, getContractCost, getDBSupplies, newTruckGraphic } from './utils';
+>>>>>>> 4d6e24405083163511cff86c83912515fdf88b2b
 
 const getRandomInt = (max) => {
   return Math.floor(Math.random() * max);
@@ -38,7 +42,10 @@ const UserMap = () => {
       });
       
       fetchRouteDetails(supplies[0], [{start_place: "Beverly Hills", finish_place: "Inglewood"}]).then((val) => {
+<<<<<<< HEAD
         console.log(val);
+=======
+>>>>>>> 4d6e24405083163511cff86c83912515fdf88b2b
         setView(new MapView({
           container: mapDiv.current,
           map: new Map({
@@ -55,6 +62,14 @@ const UserMap = () => {
           center: [-118.475, 34.026],
         }));
       });
+<<<<<<< HEAD
+=======
+
+      getContractCost(supplies[0], {start_place: "Beverly Hills", finish_place: "Inglewood"}).then((aaa) => {
+        console.log(aaa)
+      });
+
+>>>>>>> 4d6e24405083163511cff86c83912515fdf88b2b
     }, []);
 
     return <div className="mapDiv" ref={mapDiv}></div>;
