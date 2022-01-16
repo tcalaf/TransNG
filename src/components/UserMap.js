@@ -37,7 +37,16 @@ const UserMap = () => {
           x)
       });
       
-      fetchRouteDetails(supplies[0], [{start_place: "Beverly Hills", finish_place: "Inglewood"}]).then((val) => {
+      fetchRouteDetails(supplies[0], [{
+        start_place: "Beverly Hills",
+        finish_place: "Inglewood",
+        goods_weight: 20,
+        goods_length: 10,
+        goods_width: 5,
+        goods_height: 2,
+        goods_volume: 100
+      }]).then((val) => {
+        console.log(val)
         setView(new MapView({
           container: mapDiv.current,
           map: new Map({
