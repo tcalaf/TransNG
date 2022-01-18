@@ -76,42 +76,8 @@ export const newTruckGraphic = (coords, color, attributes = {}) => {
     })
   }
 
-export const getDBSupplies = () => {
-    // TODO: replace with db call to supplies
-    let supplies = [
-        {
-        id_truck: "smth",
-        start_date: "26 Dec 2021 12:00:00",
-        start_place: "Malibu",
-        finish_date: "22 Jan 2022 04:00:00",
-        finish_place: "Los Angeles International Airport",
-        current_place: '{"x": -118.475, "y": 34.026}',
-        empty_price_per_km: 10,
-        full_price_per_km: 20,
-        truck: {
-          max_weight: 100,
-          length: 100,
-          width: 20,
-          height: 50,
-          max_volume: 100000
-        }
-        },
-        {
-        id_truck: "smth2",
-        start_date: "20 Jan 2022 04:00:00",
-        start_place: "ccc2",
-        finish_date: "ddd",
-        finish_place: "ddd2",
-        current_place: '{"x": -118.475, "y": 34.526}'
-        }
-    ];
-
-    return supplies;
-}
-
-
 // supply is data from db, demands is array of demands as from db
-export const fetchRouteDetails = async (supply, demands=[]) => {
+export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 	const locations = [supply.start_place, supply.finish_place];
 	for (const d of demands) {
 		locations.push(d.start_place);
@@ -177,7 +143,7 @@ export const fetchRouteDetails = async (supply, demands=[]) => {
 				Description: "vehicle 1",
 				StartDepotName: supply.start_place,
 				EndDepotName: supply.finish_place,
-				Capacities: `${supply.truck.max_weight} ${supply.truck.length} ${supply.truck.width} ${supply.truck.height} ${supply.truck.max_volume}`,
+				Capacities: `${truck.max_weight} ${truck.length} ${truck.width} ${truck.height} ${truck.max_volume}`,
 				EarliestStartTime: Date.parse(supply.start_date),
 				LatestStartTime: Date.parse(supply.start_date)
 			}
@@ -213,7 +179,7 @@ export const getContractCost = async (supply, demand) => {
   return d1*supply.empty_price_per_km + d2*supply.full_price_per_km;
 }
 
-export const truckArrivesOnTime = async (supply, demands, newDemand) => {
-  const response = await fetchRouteDetails(supply, demands.concat(newDemand));
+export const truckArrivesOnTime = async (supply, truck, demands, newDemand) => {
+  const response = await fetchRouteDetails(supply, truck, demands.concat(newDemand));
   return response.results[2].value.features[0].attributes.TotalViolationTime === 0;
 }

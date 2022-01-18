@@ -97,7 +97,52 @@ function Dashboard() {
 				}
 			</div>
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				<UserMap />
+				<UserMap data={[
+					{
+						supply: {
+							id_truck: "smth",
+							start_date: "26 Dec 2021 12:00:00",
+							start_place: "Malibu",
+							finish_date: "22 Jan 2022 04:00:00",
+							finish_place: "Los Angeles International Airport",
+							current_place: '{"x": -118.475, "y": 34.026}',
+							empty_price_per_km: 10,
+							full_price_per_km: 20,
+						},
+						truck: {
+							max_weight: 100,
+							length: 100,
+							width: 20,
+							height: 50,
+							max_volume: 100000
+						},
+						demands: [
+							{
+								start_place: "Beverly Hills",
+								finish_place: "Inglewood",
+								goods_weight: 20,
+								goods_length: 10,
+								goods_width: 5,
+								goods_height: 2,
+								goods_volume: 100,
+								start_date: "26 Dec 2021 15:00:00",
+								start_max_date: "26 Dec 2021 18:00:00",
+								finish_date: "26 Dec 2021 21:00:00",
+								finish_max_date: "26 Dec 2021 23:59:00",
+							}
+						]
+					},
+					{
+						supply: {
+							id_truck: "smth2",
+							start_date: "20 Jan 2022 04:00:00",
+							start_place: "ccc2",
+							finish_date: "ddd",
+							finish_place: "ddd2",
+							current_place: '{"x": -118.475, "y": 34.526}'
+						}
+					}
+				]} />
 			</div>
 		</div>
 	);
