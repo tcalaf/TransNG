@@ -111,7 +111,7 @@ export const getDBSupplies = () => {
 
 
 // supply is data from db, demands is array of demands as from db
-export const fetchRouteDetails = async (supply, demands) => {
+export const fetchRouteDetails = async (supply, demands=[]) => {
 	const locations = [supply.start_place, supply.finish_place];
 	for (const d of demands) {
 		locations.push(d.start_place);
@@ -131,7 +131,12 @@ export const fetchRouteDetails = async (supply, demands) => {
 	];
 	const order_pairs = [];
 	const orders = [{
-		attributes: {Name: supply.finish_place},
+		attributes: {
+      Name: supply.finish_place,
+      RouteName: "Route 1",
+      TimeWindowEnd1: Date.parse(supply.finish_date),
+      AssignmentRule: 5
+    },
 		geometry: {type: "point", ...coords[1]}
 	}];
 
@@ -147,16 +152,20 @@ export const fetchRouteDetails = async (supply, demands) => {
 			attributes: {
 				Name: locations[i],
 				DeliveryQuantities: null,
-				PickupQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`
-			},
+				PickupQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
+        TimeWindowStart1: Date.parse(demands[i/2-1].start_date),
+        TimeWindowEnd1: Date.parse(demands[i/2-1].start_max_date),
+      },
 			geometry: {type: "point", ...coords[i]}
 		});
 		orders.push({
 			attributes: {
 				Name: locations[i+1],
 				PickupQuantities: null,
-				DeliveryQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`
-			},
+				DeliveryQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
+        TimeWindowStart1: Date.parse(demands[i/2-1].finish_date),
+        TimeWindowEnd1: Date.parse(demands[i/2-1].finish_max_date),
+      },
 			geometry: {type: "point", ...coords[i+1]}
 		});
   	}
@@ -189,10 +198,10 @@ export const fetchRouteDetails = async (supply, demands) => {
 export const getDrivingDistance = async (coords) => {
 	const r = await route.solve(routeUrl, new RouteParameters({
 		stops: new FeatureSet({
-		features: coords.map((c) => {
-			return {geometry: new Point(c)}
-		})
-		})
+      features: coords.map((c) => {
+        return {geometry: new Point(c)}
+      })
+    })
 	}));
 	return r.routeResults[0].route.attributes.Total_Kilometers;
 }
@@ -202,4 +211,9 @@ export const getContractCost = async (supply, demand) => {
   const d1 = await getDrivingDistance(coords.slice(0, 2));
   const d2 = await getDrivingDistance(coords.slice(1));
   return d1*supply.empty_price_per_km + d2*supply.full_price_per_km;
+}
+
+export const truckArrivesOnTime = async (supply, demands, newDemand) => {
+  const response = await fetchRouteDetails(supply, demands.concat(newDemand));
+  return response.results[2].value.features[0].attributes.TotalViolationTime === 0;
 }
