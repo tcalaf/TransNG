@@ -7,7 +7,7 @@ import { useHistory } from "react-router";
 import "./../Dashboard.css";
 import { auth, db, logout } from "./../../firebase";
 import logo from './../../assets/delivery_light.png';
-import CarrierHeader from "./../Carrier/CarrierHeader";
+import ClientHeader from "./../Client/ClientHeader";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -16,7 +16,7 @@ import Col from 'react-bootstrap/Col';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function Dashboard() {
+function NewShipment() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
@@ -69,7 +69,7 @@ function Dashboard() {
 				<Navbar.Collapse id="responsive-navbar-nav">
 					<Nav className="me-auto">
 					<Nav.Link eventKey="disabled" disabled>Logged in as {name} | {role}</Nav.Link>
-					<CarrierHeader></CarrierHeader>
+					<ClientHeader></ClientHeader>
 					</Nav>
 					<Nav>
 					<Nav.Link href="#settings">Settings</Nav.Link>
@@ -80,45 +80,76 @@ function Dashboard() {
 				</Container>
 			</Navbar>
 			<div className="column menu">
-				{/* <CarrierSettings email={user?.email} name={name} uid={user?.uid}/> */}
                 <Form>
-                    <h3>New Trip</h3>
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Truck:</Form.Label>
-                        <Form.Control placeholder="B 123 TNG"/>
-                    </Form.Group>
+                    <h3>New Shipment</h3>
                     <Form.Label>Start Date:</Form.Label>
+                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+                    <Form.Label>Start Max Date:</Form.Label>
+                    <br></br>
+                    <Form.Text className="text-muted">
+                        in case trucks are unavailable for chosen Start Date
+                    </Form.Text>
                     <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Start Place:</Form.Label>
-                        <Form.Control placeholder="Bucharest"/>
+                        <Form.Control placeholder="e.g.: Bucharest"/>
                     </Form.Group>
-                    <Form.Label>Arrival Date:</Form.Label>
+                    <Form.Label>Finish Date:</Form.Label>
+                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+                    <Form.Label>Finish Max Date:</Form.Label>
+                    <br></br>
+                    <Form.Text className="text-muted">
+                        in case trucks are unavailable for chosen Finish Date
+                    </Form.Text>
                     <DatePicker selected={finishDate} onChange={(date) => setStartDate(date)} />
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Destination:</Form.Label>
-                        <Form.Control placeholder="Constanta"/>
+                        <Form.Label>Finish Place:</Form.Label>
+                        <Form.Control placeholder="e.g.: Constanta"/>
                     </Form.Group>
-                    <Form.Label>Price per km in €</Form.Label>
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+                        <Form.Label>Goods Type:</Form.Label>
+                        <Form.Control placeholder="e.g.: Furniture"/>
+                    </Form.Group>
+                    <Form.Label>Dimensions</Form.Label>
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
-                        when empty:
+                        weight (in kg):
                         </Form.Text>
-                        <Form.Control type="text" placeholder="0.1" />
+                        <Form.Control type="text" placeholder="e.g.: 100" />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
-                        when loaded:
+                        volume (in m³):
                         </Form.Text>
-                        <Form.Control type="text" placeholder="0.5" />
+                        <Form.Control type="text" placeholder="e.g.: 5" />
                         </Form.Group>
                     </Row>
                     <Row className="mb-3">
+                        <Form.Group as={Col} controlId="formGridEmail">
+                        <Form.Text>length (in m):</Form.Text>
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" />
+                        </Form.Group>
+
+                        <Form.Group as={Col} controlId="formGridPassword">
+                        <Form.Text>width (in m):</Form.Text>
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" />
+                        </Form.Group>
+
+                        <Form.Group as={Col} controlId="formGridPassword">
+                        <Form.Text>height (in m):</Form.Text>
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" />
+                        </Form.Group>
+                    </Row>
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+                        <Form.Label>Budget (in €):</Form.Label>
+                        <Form.Control placeholder="e.g.: 125"/>
+                    </Form.Group>
+                    <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Label>Contact Mail:</Form.Label>
-                        <Form.Control type="text" placeholder="johnsimth@carrier.com" />
+                        <Form.Control type="text" placeholder="johnsimth@client.com" />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
@@ -128,11 +159,11 @@ function Dashboard() {
                     </Row>
 
                     <Button variant="primary" type="submit">
-                        Add Trip
+                        Add Shipment
                     </Button>
                 </Form>
 			</div>
 		</div>
 	);
 }
-export default Dashboard;
+export default NewShipment;
