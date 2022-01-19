@@ -133,9 +133,6 @@ function Dashboard() {
                     </Button>
                 </Form>
 			</div>
-			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				<UserMap />
-			</div>
 		</div>
 	);
 }
