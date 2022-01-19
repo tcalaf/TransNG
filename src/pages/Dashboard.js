@@ -136,11 +136,19 @@ function Dashboard() {
 						supply: {
 							id_truck: "smth2",
 							start_date: "20 Jan 2022 04:00:00",
-							start_place: "ccc2",
-							finish_date: "ddd",
-							finish_place: "ddd2",
+							start_place: "Long Beach",
+							finish_date: "22 Jan 2022 04:00:00",
+							finish_place: "Santa Ana",
 							current_place: '{"x": -118.475, "y": 34.526}'
-						}
+						},
+						truck: {
+							max_weight: 100,
+							length: 100,
+							width: 20,
+							height: 50,
+							max_volume: 100000
+						},
+						demands: []
 					}
 				]} />
 			</div>

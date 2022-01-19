@@ -7,6 +7,7 @@ import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol";
 import PopupTemplate from "@arcgis/core/PopupTemplate";
 import FeatureSet from "@arcgis/core/rest/support/FeatureSet";
 import RouteParameters from "@arcgis/core/rest/support/RouteParameters";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
 const locatorUrl = "https://geocode-api.arcgis.com/arcgis/rest/services/World/GeocodeServer";
 const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World/VehicleRoutingProblemSync/GPServer/EditVehicleRoutingProblem";
@@ -182,4 +183,31 @@ export const getContractCost = async (supply, demand) => {
 export const truckArrivesOnTime = async (supply, truck, demands, newDemand) => {
   const response = await fetchRouteDetails(supply, truck, demands.concat(newDemand));
   return response.results[2].value.features[0].attributes.TotalViolationTime === 0;
+}
+
+const getRandomInt = (max) => {
+  return Math.floor(Math.random() * max);
+}
+
+const getRouteLayer = (features) => {
+  const routeLayer = new GraphicsLayer();
+  for (let f of features) {
+    f.symbol = {
+      type: "simple-line",
+      color: [getRandomInt(200), getRandomInt(200), getRandomInt(200), 0.75],
+      width: "4px"
+    }
+  }
+  routeLayer.addMany(features);
+  return routeLayer;
+}
+
+export const getRoutesLayers = async (data) => {
+  const routesLayers = [];
+  for (let i = 0; i < data.length; i++) {
+    const result = await fetchRouteDetails(data[i].supply, data[i].truck, data[i].demands);
+    console.log("AAA", result);
+    routesLayers.push(getRouteLayer(result.results[2].value.features))
+  }
+  return routesLayers;
 }
