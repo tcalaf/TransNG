@@ -4,7 +4,7 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { fetchRouteDetails, getContractCost, getDBSupplies, newTruckGraphic } from './utils';
+import { fetchRouteDetails, newTruckGraphic } from './utils';
 
 const getRandomInt = (max) => {
   return Math.floor(Math.random() * max);
@@ -23,21 +23,28 @@ const getRouteLayer = (features) => {
   return routeLayer;
 }
 
-const UserMap = () => {
+/* props.data (required) structure: [{
+    supply: supplyDbObj,
+    truck: truckDbObj,
+    demands: [demandDbObj]
+  }]
+  */
+const UserMap = (props) => {
     const mapDiv = useRef(null);
     const [view, setView] = useState(null);
 
     // Init map parameters.
     useEffect(() => {
-      const supplies = getDBSupplies();
+      const supplies = props.data.map(x => x.supply);
       const suppliesGraphics = supplies.map((x) => {
         return newTruckGraphic(
           JSON.parse(x.current_place),
           (Date.parse(x.start_date) < Date.now()) ? "red" : "green",
           x)
       });
-      
-      fetchRouteDetails(supplies[0], [{start_place: "Beverly Hills", finish_place: "Inglewood"}]).then((val) => {
+
+      fetchRouteDetails(props.data[0].supply, props.data[0].truck, props.data[0].demands).then((val) => {
+        console.log(val)
         setView(new MapView({
           container: mapDiv.current,
           map: new Map({
@@ -54,11 +61,6 @@ const UserMap = () => {
           center: [-118.475, 34.026],
         }));
       });
-
-      getContractCost(supplies[0], {start_place: "Beverly Hills", finish_place: "Inglewood"}).then((aaa) => {
-        console.log(aaa)
-      });
-
     }, []);
 
     return <div className="mapDiv" ref={mapDiv}></div>;

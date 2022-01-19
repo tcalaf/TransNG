@@ -11,7 +11,7 @@ import { useEffect } from "react";
 function App() {
 
   useEffect(() => {
-    esriConfig.apiKey = "AAPK445b17b023f9440aa2213838c5521ee36GsXRZpxGdn8Kp4ccanvzmycWR08vmAxcQxqqwempljZ_jX4o95h-sxhKi96aAv3";
+    esriConfig.apiKey = "AAPKc290ac9a96c243e089dd61a1de2fb903Kfv2i7bQ6JfQidhtMPSZ3mr9DhmHUqpRooce7giUssBi2XGGrId_yB0WslpPcAD7";
   }, [])
 
   return (
