@@ -20,6 +20,7 @@ function Dashboard() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
+	const [mapData, setMapData] = useState([]);
 	const history = useHistory();
 
 	useEffect(() => {
@@ -48,6 +49,49 @@ function Dashboard() {
 				setName(data.name);
 				setRole(data.role);
 				console.log(data.name);
+
+				const suppliesRef = db.collection("users").doc(user?.uid).collection("supplies");
+				const suppliesSnap = await suppliesRef.get();
+				const allSupplies = suppliesSnap.docs.map(supplyDoc => ({
+					...supplyDoc.data(),
+					id: supplyDoc.id,
+				}));
+
+				console.log(allSupplies);
+
+				let userMapData = [];
+
+				for (let i = 0; i < allSupplies.length; i++) {
+					const truckRef = db.collection("users").doc(user?.uid).collection("trucks").doc(allSupplies[i].id_truck);
+					const truckSnap = await truckRef.get();
+					const truckData = truckSnap.data();
+					console.log(truckData);
+
+					let demands = [];
+
+					const demandsData = allSupplies[i].demands;
+					console.log(demandsData);
+
+					for (let j = 0; j < demandsData.length; j++) {
+						const demandRef = db.collection("users").doc(demandsData[j].demand_uid).collection("demands").doc(demandsData[j].demand_id);
+						const demandSnap = await demandRef.get();
+						const demandData = demandSnap.data();
+						demands.push(demandData);
+					}
+
+					console.log(demands);
+					
+					userMapData.push({
+						supply: allSupplies[i],
+						truck: truckData,
+						demands: demands
+					});
+
+				}
+				console.log(userMapData);
+				setMapData(userMapData);
+
+
 			} catch (err) {
 				console.error(err);
 				alert("An error occured while fetching user data");
@@ -97,7 +141,7 @@ function Dashboard() {
 				}
 			</div>
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				<UserMap data={[
+				{/*<UserMap data={[
 					{
 						supply: {
 							id_truck: "smth",
@@ -142,7 +186,8 @@ function Dashboard() {
 							current_place: '{"x": -118.475, "y": 34.526}'
 						}
 					}
-				]} />
+				]} />*/}
+				<UserMap data={mapData} />
 			</div>
 		</div>
 	);

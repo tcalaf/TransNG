@@ -29,21 +29,23 @@ const getRouteLayer = (features) => {
     demands: [demandDbObj]
   }]
   */
-const UserMap = (props) => {
+const UserMap = ({data}) => {
     const mapDiv = useRef(null);
     const [view, setView] = useState(null);
-
+    console.log(data);
     // Init map parameters.
     useEffect(() => {
-      const supplies = props.data.map(x => x.supply);
+      console.log(data);
+
+      const supplies = data.map(x => x.supply);
       const suppliesGraphics = supplies.map((x) => {
         return newTruckGraphic(
           JSON.parse(x.current_place),
           (Date.parse(x.start_date) < Date.now()) ? "red" : "green",
           x)
       });
-
-      fetchRouteDetails(props.data[0].supply, props.data[0].truck, props.data[0].demands).then((val) => {
+      
+      fetchRouteDetails(data[0].supply, data[0].truck, data[0].demands).then((val) => {
         console.log(val)
         setView(new MapView({
           container: mapDiv.current,
@@ -61,7 +63,7 @@ const UserMap = (props) => {
           center: [-118.475, 34.026],
         }));
       });
-    }, []);
+    }, [data]);
 
     return <div className="mapDiv" ref={mapDiv}></div>;
 }
