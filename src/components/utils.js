@@ -190,7 +190,6 @@ const getRandomInt = (max) => {
 }
 
 const getRouteLayerFeatures = (features) => {
-  const routeLayer = new GraphicsLayer();
   for (let f of features) {
     f.symbol = {
       type: "simple-line",
@@ -198,7 +197,6 @@ const getRouteLayerFeatures = (features) => {
       width: "4px"
     }
   }
-  //routeLayer.addMany(features);
   return features;
 }
 

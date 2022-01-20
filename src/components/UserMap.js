@@ -52,7 +52,7 @@ const UserMap = ({visible, data}) => {
            routesLayer.current.addMany(routeFeatures);
         }
         buildRouteLayer();
-    }, [data]);
+    }, [data, visible]);
 
     return <div className="mapDiv" ref={mapDiv}></div>;
 }
