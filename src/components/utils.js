@@ -14,6 +14,7 @@ const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 export const addressesToCoordinates = async (addresses) => {
+  console.log(addresses);
   const coordinates = [];
   for (const addr of addresses) {
     const results = await locator.addressToLocations(
@@ -101,7 +102,7 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		attributes: {
       Name: supply.finish_place,
       RouteName: "Route 1",
-      TimeWindowEnd1: Date.parse(supply.finish_date),
+      TimeWindowEnd1: supply.finish_date,
       AssignmentRule: 5
     },
 		geometry: {type: "point", ...coords[1]}
@@ -120,8 +121,8 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 				Name: locations[i],
 				DeliveryQuantities: null,
 				PickupQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
-        TimeWindowStart1: Date.parse(demands[i/2-1].start_date),
-        TimeWindowEnd1: Date.parse(demands[i/2-1].start_max_date),
+        TimeWindowStart1: demands[i/2-1].start_date,
+        TimeWindowEnd1: demands[i/2-1].start_max_date,
       },
 			geometry: {type: "point", ...coords[i]}
 		});
@@ -130,8 +131,8 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 				Name: locations[i+1],
 				PickupQuantities: null,
 				DeliveryQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
-        TimeWindowStart1: Date.parse(demands[i/2-1].finish_date),
-        TimeWindowEnd1: Date.parse(demands[i/2-1].finish_max_date),
+        TimeWindowStart1: demands[i/2-1].finish_date,
+        TimeWindowEnd1: demands[i/2-1].finish_max_date,
       },
 			geometry: {type: "point", ...coords[i+1]}
 		});
@@ -145,8 +146,8 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 				StartDepotName: supply.start_place,
 				EndDepotName: supply.finish_place,
 				Capacities: `${truck.max_weight} ${truck.length} ${truck.width} ${truck.height} ${truck.max_volume}`,
-				EarliestStartTime: Date.parse(supply.start_date),
-				LatestStartTime: Date.parse(supply.start_date)
+				EarliestStartTime: supply.start_date,
+				LatestStartTime: supply.start_date
 			}
 		}]
 	});
@@ -156,9 +157,9 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		depots: new FeatureSet({features: depots}),
 		routes,
 		order_pairs: new FeatureSet({features: order_pairs}),
-		default_date: Date.parse(supply.start_date)
+		default_date: supply.start_date
 	};
-
+  console.log(params);
 	return await geoprocessor.execute(fleetRoutingUrl, params);
 }
 

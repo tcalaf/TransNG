@@ -23,11 +23,11 @@ const UserMap = ({visible, data}) => {
             layers: [trucksLayer.current, routesLayer.current]
         }),
         scale: 1000000,
-        center: [-118.475, 34.026],
+        center: [26.10298000000006, 44.43429000000003],
     }));
 
     useEffect(() => {
-        console.log("map mount")
+        console.log("map moun")
     }, []);
 
     useEffect(() => {
@@ -50,7 +50,9 @@ const UserMap = ({visible, data}) => {
            const routeFeatures = await getRouteLayersFeatures(data);
            routesLayer.current.removeAll();
            routesLayer.current.addMany(routeFeatures);
+           console.log("aa\n", routeFeatures)
         }
+        
         buildRouteLayer();
     }, [data, visible]);
 
