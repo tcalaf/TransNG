@@ -151,7 +151,58 @@ function Dashboard() {
 				}
 			</div>
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				 <UserMap visible={user && role !== "" && name !== ""} data={mapData} /> 
+				 <UserMap visible={user && role !== "" && name !== ""} data={[
+					 {
+						supply: {
+							id: "123",
+							id_truck: "smth",
+							start_date: "26 Dec 2021 12:00:00",
+							start_place: "Bucuresti",
+							finish_date: "22 Jan 2022 04:00:00",
+							finish_place: "Constanta",
+							current_place: '{"x": 27.822100000000034, "y": 44.41611000000006}',
+							empty_price_per_km: 10,
+							full_price_per_km: 20,
+						},
+						truck: {
+							max_weight: 100,
+							length: 100,
+							width: 20,
+							height: 50,
+							max_volume: 100000
+						},
+						demands: [
+							{
+								id: "234",
+								start_place: "Bucuresti",
+								finish_place: "Fetesti",
+								goods_weight: 20,
+								goods_length: 10,
+								goods_width: 5,
+								goods_height: 2,
+								goods_volume: 100,
+								start_date: "26 Dec 2021 15:00:00",
+								start_max_date: "27 Dec 2021 18:00:00",
+								finish_date: "28 Dec 2021 21:00:00",
+								finish_max_date: "29 Dec 2021 23:59:00",
+							},
+							{
+								id: "345",
+								start_place: "Fetesti",
+								finish_place: "Constanta",
+								goods_weight: 20,
+								goods_length: 10,
+								goods_width: 5,
+								goods_height: 2,
+								goods_volume: 100,
+								start_date: "28 Dec 2021 15:00:00",
+								start_max_date: "29 Dec 2021 18:00:00",
+								finish_date: "30 Dec 2021 21:00:00",
+								finish_max_date: "31 Dec 2021 23:59:00",
+							}
+						]
+					},
+				 ]} /> 
 			</div>
 		</div>
 	);

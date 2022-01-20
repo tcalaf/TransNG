@@ -89,20 +89,20 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 
 	const depots = [
 		{
-			attributes: {Name: supply.start_place},
+			attributes: {Name: supply.start_place+"_supply"},
 			geometry: {type: "point", ...coords[0]}
 		},
 		{
-			attributes: {Name: supply.finish_place},
+			attributes: {Name: supply.finish_place+"_supply"},
 			geometry: {type: "point", ...coords[1]}
 		}
 	];
 	const order_pairs = [];
 	const orders = [{
 		attributes: {
-      Name: supply.finish_place,
+      Name: supply.finish_place+"_end_depot",
       RouteName: "Route 1",
-      TimeWindowEnd1: supply.finish_date,
+      TimeWindowEnd1: Date.parse(supply.finish_date),
       AssignmentRule: 5
     },
 		geometry: {type: "point", ...coords[1]}
@@ -111,28 +111,28 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 	for (let i = 2; i < locations.length; i = i + 2) {
 		order_pairs.push({
 			attributes: {
-				FirstOrderName: locations[i],
-				SecondOrderName: locations[i+1]
+				FirstOrderName: locations[i]+"_demand_"+demands[i/2-1].id,
+				SecondOrderName: locations[i+1]+"_demand_"+demands[i/2-1].id
 			}
 		});
 
 		orders.push({
 			attributes: {
-				Name: locations[i],
+				Name: locations[i]+"_demand_"+demands[i/2-1].id,
 				DeliveryQuantities: null,
 				PickupQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
-        TimeWindowStart1: demands[i/2-1].start_date,
-        TimeWindowEnd1: demands[i/2-1].start_max_date,
+        TimeWindowStart1: Date.parse(demands[i/2-1].start_date),
+        TimeWindowEnd1: Date.parse(demands[i/2-1].start_max_date),
       },
 			geometry: {type: "point", ...coords[i]}
 		});
 		orders.push({
 			attributes: {
-				Name: locations[i+1],
+				Name: locations[i+1]+"_demand_"+demands[i/2-1].id,
 				PickupQuantities: null,
 				DeliveryQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
-        TimeWindowStart1: demands[i/2-1].finish_date,
-        TimeWindowEnd1: demands[i/2-1].finish_max_date,
+        TimeWindowStart1: Date.parse(demands[i/2-1].finish_date),
+        TimeWindowEnd1: Date.parse(demands[i/2-1].finish_max_date),
       },
 			geometry: {type: "point", ...coords[i+1]}
 		});
@@ -143,11 +143,11 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 			attributes: {
 				Name: "Route 1",
 				Description: "vehicle 1",
-				StartDepotName: supply.start_place,
-				EndDepotName: supply.finish_place,
+				StartDepotName: supply.start_place+"_supply",
+				EndDepotName: supply.finish_place+"_supply",
 				Capacities: `${truck.max_weight} ${truck.length} ${truck.width} ${truck.height} ${truck.max_volume}`,
-				EarliestStartTime: supply.start_date,
-				LatestStartTime: supply.start_date
+				EarliestStartTime: Date.parse(supply.start_date),
+				LatestStartTime: Date.parse(supply.start_date)
 			}
 		}]
 	});
@@ -157,10 +157,12 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		depots: new FeatureSet({features: depots}),
 		routes,
 		order_pairs: new FeatureSet({features: order_pairs}),
-		default_date: supply.start_date
+		default_date: Date.parse(supply.start_date)
 	};
   console.log(params);
-	return await geoprocessor.execute(fleetRoutingUrl, params);
+	const a = await geoprocessor.execute(fleetRoutingUrl, params);
+  console.log("AAAA", a);
+  return a;
 }
 
 export const getDrivingDistance = async (coords) => {
