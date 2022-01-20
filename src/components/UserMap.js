@@ -34,6 +34,7 @@ const UserMap = ({data}) => {
     const [view, setView] = useState(null);
     console.log(data);
     // Init map parameters.
+    
     useEffect(() => {
       console.log(data);
 
