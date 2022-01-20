@@ -189,7 +189,7 @@ const getRandomInt = (max) => {
   return Math.floor(Math.random() * max);
 }
 
-const getRouteLayer = (features) => {
+const getRouteLayerFeatures = (features) => {
   const routeLayer = new GraphicsLayer();
   for (let f of features) {
     f.symbol = {
@@ -198,16 +198,16 @@ const getRouteLayer = (features) => {
       width: "4px"
     }
   }
-  routeLayer.addMany(features);
-  return routeLayer;
+  //routeLayer.addMany(features);
+  return features;
 }
 
-export const getRoutesLayers = async (data) => {
-  const routesLayers = [];
+export const getRouteLayersFeatures = async (data) => {
+  let features = [];
   for (let i = 0; i < data.length; i++) {
     const result = await fetchRouteDetails(data[i].supply, data[i].truck, data[i].demands);
-    console.log("AAA", result);
-    routesLayers.push(getRouteLayer(result.results[2].value.features))
+    features = features.concat(getRouteLayerFeatures(result.results[2].value.features));
   }
-  return routesLayers;
+  console.log(features)
+  return features;
 }

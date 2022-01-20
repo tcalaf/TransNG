@@ -23,7 +23,12 @@ function Dashboard() {
 	const history = useHistory();
 
 	useEffect(() => {
+		console.log("dashboard mount")
+	}, []);
+
+	useEffect(() => {
 		if (loading) {
+			console.log("loading page")
 			return (
 				<div>
 				  <p>Initialising User...</p>
@@ -31,6 +36,7 @@ function Dashboard() {
 			  );
 		}
 		if (error) {
+			console.log("error page")
 			return (
 			  <div>
 				<p>Error: {error}</p>
@@ -38,6 +44,7 @@ function Dashboard() {
 			);
 		}
 		if (!user) {
+			console.log("redirect to login")
 			return history.replace("/");
 		}
 		async function fetchData() {
@@ -55,6 +62,8 @@ function Dashboard() {
 		}
 		fetchData();
 	}, [user, loading, error]);
+	
+	console.log("dashboard")
 
 	return (
 		<div>
@@ -97,7 +106,7 @@ function Dashboard() {
 				}
 			</div>
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				<UserMap data={[
+				<UserMap visible={user && role !== "" && name !== ""} data={[
 					{
 						supply: {
 							id_truck: "smth",

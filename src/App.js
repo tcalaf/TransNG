@@ -12,7 +12,7 @@ import { useEffect } from "react";
 function App() {
 
   useEffect(() => {
-    esriConfig.apiKey = "AAPKc290ac9a96c243e089dd61a1de2fb903Kfv2i7bQ6JfQidhtMPSZ3mr9DhmHUqpRooce7giUssBi2XGGrId_yB0WslpPcAD7";
+    esriConfig.apiKey = "AAPKa1126a14067c47a9b6a2bfb5fd1526dc11PbQkndHxs2Rwe1LeT6CS9R58T6ouCVxSAZ1hLrzbfsqf264SGC-NDvMt3XBVUZ";
   }, [])
 
 

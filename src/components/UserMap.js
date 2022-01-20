@@ -1,47 +1,58 @@
 import './UserMap.css';
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { getRoutesLayers, newTruckGraphic } from './utils';
+import { getRouteLayersFeatures, newTruckGraphic } from './utils';
 
-/* props.data (required) structure: [{
+/* data (required) structure: [{
     supply: supplyDbObj,
     truck: truckDbObj,
     demands: [demandDbObj]
   }]
   */
-const UserMap = (props) => {
+const UserMap = ({visible, data}) => {
     const mapDiv = useRef(null);
-    const [view, setView] = useState(null);
+    const trucksLayer = useRef(new GraphicsLayer());
+    const routesLayer = useRef(new GraphicsLayer());
+    const view = useRef(new MapView({
+        container: mapDiv.current,
+        map: new Map({
+            basemap: "arcgis-navigation",
+            layers: [trucksLayer.current, routesLayer.current]
+        }),
+        scale: 1000000,
+        center: [-118.475, 34.026],
+    }));
 
-    // Init map parameters.
     useEffect(() => {
-        const supplies = props.data.map(x => x.supply);
-        const suppliesGraphics = supplies.map((x) => {
-        return newTruckGraphic(
-            JSON.parse(x.current_place),
-            (Date.parse(x.start_date) < Date.now()) ? "red" : "green",
-            x)
-        });
-        getRoutesLayers(props.data).then((routeLayers) => {
-            setView(new MapView({
-                container: mapDiv.current,
-                map: new Map({
-                    basemap: "arcgis-navigation",
-                    layers: [
-                        new GraphicsLayer({
-                            id: "Trucks Points",
-                            graphics: suppliesGraphics
-                        })
-                    ].concat(routeLayers)
-                }),
-                scale: 1000000,
-                center: [-118.475, 34.026],
-            }));
-        });
+        console.log("map mount")
     }, []);
+
+    useEffect(() => {
+        console.log("map props rerender")
+
+        if (!visible)
+            return;
+
+        const suppliesGraphics = data.map((x) => {
+            return newTruckGraphic(
+                JSON.parse(x.supply.current_place),
+                (Date.parse(x.supply.start_date) < Date.now()) ? "red" : "green",
+                x.supply
+            );
+        });
+        trucksLayer.current.removeAll();
+        trucksLayer.current.addMany(suppliesGraphics);
+
+        async function buildRouteLayer() {
+           const routeFeatures = await getRouteLayersFeatures(data);
+           routesLayer.current.removeAll();
+           routesLayer.current.addMany(routeFeatures);
+        }
+        buildRouteLayer();
+    }, [data]);
 
     return <div className="mapDiv" ref={mapDiv}></div>;
 }
