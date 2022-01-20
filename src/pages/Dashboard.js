@@ -69,7 +69,12 @@ function Dashboard() {
 	const history = useHistory();
 
 	useEffect(() => {
+		console.log("dashboard mount")
+	}, []);
+
+	useEffect(() => {
 		if (loading) {
+			console.log("loading page")
 			return (
 				<div>
 				  <p>Initialising User...</p>
@@ -77,6 +82,7 @@ function Dashboard() {
 			  );
 		}
 		if (error) {
+			console.log("error page")
 			return (
 			  <div>
 				<p>Error: {error}</p>
@@ -84,6 +90,7 @@ function Dashboard() {
 			);
 		}
 		if (!user) {
+			console.log("redirect to login")
 			return history.replace("/");
 		}
 	}, [user, loading, error]);
@@ -146,7 +153,7 @@ function Dashboard() {
 			}			
 		}
 		fetchData();
-	}, []);
+	}, [user?.uid]);
 
 	return (
 		<div>
@@ -189,7 +196,7 @@ function Dashboard() {
 				}
 			</div>
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
-				{/*<UserMap data={[
+				{/* <UserMap visible={user && role !== "" && name !== ""} data={[
 					{
 						supply: {
 							id_truck: "smth",
@@ -228,14 +235,21 @@ function Dashboard() {
 						supply: {
 							id_truck: "smth2",
 							start_date: "20 Jan 2022 04:00:00",
-							start_place: "ccc2",
-							finish_date: "ddd",
-							finish_place: "ddd2",
+							start_place: "Long Beach",
+							finish_date: "22 Jan 2022 04:00:00",
+							finish_place: "Santa Ana",
 							current_place: '{"x": -118.475, "y": 34.526}'
-						}
+						},
+						truck: {
+							max_weight: 100,
+							length: 100,
+							width: 20,
+							height: 50,
+							max_volume: 100000
+						},
+						demands: []
 					}
-				]} />*/}
-				<UserMap data={mapData} />
+				]} /> */}
 			</div>
 		</div>
 	);

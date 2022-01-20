@@ -4,7 +4,7 @@ import Nav from 'react-bootstrap/Nav';
 const ClientHeader=()=>{
     return(
         <React.Fragment>
-        <Nav.Link href="#ship">Ship</Nav.Link>
+        <Nav.Link href="/ship/new">Ship</Nav.Link>
         <Nav.Link href="#shipments">My Shipments</Nav.Link>
         </React.Fragment>
     )
