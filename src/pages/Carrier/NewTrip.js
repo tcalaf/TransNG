@@ -21,8 +21,82 @@ function Dashboard() {
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
 	const history = useHistory();
-    const [startDate, setStartDate] = useState(new Date());
-    const [finishDate, setFinishDate] = useState(new Date());
+
+	const [truckId, setTruckId] = useState("");
+    const [startDate, setStartDate] = useState("");
+	const [startPlace, setStartPlace] = useState("");
+    const [finishDate, setFinishDate] = useState("");
+	const [finishPlace, setFinishPlace] = useState("");
+	const [emptyPricePerKm, setEmptyPricePerKm] = useState(-1);
+	const [fullPricePerKm, setFullPricePerKm] = useState(-1);
+	const [contactMail, setContactMail] = useState("");
+	const [contactPhone, setContactPhone] = useState("");
+
+	const [defaultMail, setDefaultMail] = useState("");
+	const [defaultPhone, setDefaultPhone] = useState("");
+
+	const [trucks, setTrucks] = useState([]);
+
+    const onlyDigits = (evt) => {
+        if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
+        {
+            evt.preventDefault();
+        }
+    }
+
+
+	const addSupply = () => {
+		var hasEmptyField = false
+        var emptyFields = "Please enter:\n"
+
+		if (startDate === "") {
+			emptyFields += "- Start Date\n"
+            hasEmptyField = true
+		}
+		if (startPlace === "") {
+			emptyFields += "- Start Place\n"
+            hasEmptyField = true
+		}
+		if (finishDate === "") {
+			emptyFields += "- Finish Date\n"
+            hasEmptyField = true
+		}
+		if (finishPlace === "") {
+			emptyFields += "- Finish Place\n"
+            hasEmptyField = true
+		}
+		if (emptyPricePerKm < 0) {
+			emptyFields += "- Empty Price per km\n"
+            hasEmptyField = true
+		}
+		if (fullPricePerKm < 0) {
+			emptyFields += "- Full Price per km\n"
+            hasEmptyField = true
+		}
+		if (hasEmptyField) {
+            alert(emptyFields);
+            return;
+        }
+
+        db.collection("users").doc(user.uid).collection("supplies").add({
+			id_truck: (truckId === "" ? trucks[0].id : truckId),
+            start_date: startDate,
+            start_place: startPlace,
+			finish_date: finishDate,
+			finish_place: finishPlace,
+			empty_price_per_km: emptyPricePerKm,
+			full_price_per_km: fullPricePerKm,
+			contact_mail: (contactMail === "" ? defaultMail : contactMail),
+			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
+        })
+        .then((docRef) => {
+            alert("Supply added with ID: " + docRef.id)
+            console.log("Document written with ID: ", docRef.id);
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+        });
+	}
 
 	useEffect(() => {
 		if (loading) {
@@ -44,12 +118,24 @@ function Dashboard() {
 		}
 		async function fetchData() {
 			try {
-				const userRef = await db.collection("users").doc(user?.uid);
+				const userRef = db.collection("users").doc(user?.uid);
 				const userSnap = await userRef.get();
 				const data = userSnap.data();
 				setName(data.name);
 				setRole(data.role);
+				setDefaultPhone(data.phone);
+				setDefaultMail(data.email);
+
 				console.log(data.name);
+
+				const trucksCollectionRef = db.collection("users").doc(user.uid).collection("trucks");
+                const trucksSnap = await trucksCollectionRef.get();
+                const allTrucks = trucksSnap.docs.map(truckDoc => ({
+                    ...truckDoc.data(),
+                    id: truckDoc.id,
+                }));
+                setTrucks(allTrucks);
+
 			} catch (err) {
 				console.error(err);
 				alert("An error occured while fetching user data");
@@ -85,49 +171,72 @@ function Dashboard() {
                     <h3>New Trip</h3>
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Truck:</Form.Label>
-                        <Form.Control placeholder="B 123 TNG"/>
+						<Form.Select onChange={(e) => setTruckId(e.target.value)}>
+							{
+								trucks.map((truck) => 
+									<option value={truck.id}> {truck.licence_plate} </option>
+								)
+							}
+						</Form.Select>
                     </Form.Group>
-                    <Form.Label>Start Date:</Form.Label>
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+						<Form.Label>Start Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Control placeholder="e.g.: 22 Jan 2022 04:00:00" onChange={(e) => setStartDate(e.target.value)}/>
+                    </Form.Group>
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Start Place:</Form.Label>
-                        <Form.Control placeholder="Bucharest"/>
+                        <Form.Control placeholder="Bucharest" onChange={(e) => setStartPlace(e.target.value)}/>
                     </Form.Group>
-                    <Form.Label>Arrival Date:</Form.Label>
-                    <DatePicker selected={finishDate} onChange={(date) => setStartDate(date)} />
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Destination:</Form.Label>
-                        <Form.Control placeholder="Constanta"/>
+						<Form.Label>Finish Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Control placeholder="ex: 23 Jan 2022 04:00:00" onChange={(e) => setFinishDate(e.target.value)}/>
                     </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+                        <Form.Label>Finish Place:</Form.Label>
+                        <Form.Control placeholder="Constanta" onChange={(e) => setFinishPlace(e.target.value)}/>
+                    </Form.Group>
+
                     <Form.Label>Price per km in €</Form.Label>
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
                         when empty:
                         </Form.Text>
-                        <Form.Control type="text" placeholder="0.1" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 0.1" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setEmptyPricePerKm(e.target.valueAsNumber)} />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
                         when loaded:
                         </Form.Text>
-                        <Form.Control type="text" placeholder="0.5" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 0.5" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setFullPricePerKm(e.target.valueAsNumber)} />
                         </Form.Group>
                     </Row>
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Label>Contact Mail:</Form.Label>
-                        <Form.Control type="text" placeholder="johnsimth@carrier.com" />
+						<br></br>
+						<Form.Text className="text-muted">
+                        or leave it default:
+                        </Form.Text>
+                        <Form.Control type="text" placeholder={defaultMail} onChange={(e) => setContactMail(e.target.value)}/>
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Label>Contact Phone:</Form.Label>
-                        <Form.Control type="text" placeholder="+40712345678" />
+						<br></br>
+						<Form.Text className="text-muted">
+                        or leave it default:
+                        </Form.Text>
+                        <Form.Control type="text" placeholder={defaultPhone} onChange={(e) => setContactPhone(e.target.value)} />
                         </Form.Group>
                     </Row>
 
-                    <Button variant="primary" type="submit">
+                    <Button variant="primary" type="submit" onClick={(e) => {e.preventDefault(); addSupply();}}>
                         Add Trip
                     </Button>
                 </Form>
