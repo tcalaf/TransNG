@@ -16,7 +16,7 @@ import Col from 'react-bootstrap/Col';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function Dashboard() {
+function NewTrip() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
@@ -244,4 +244,4 @@ function Dashboard() {
 		</div>
 	);
 }
-export default Dashboard;
+export default NewTrip;
