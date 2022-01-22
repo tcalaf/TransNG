@@ -43,6 +43,8 @@ function NewShipment() {
 
     const [dbGoods, setDBGoods] = useState([]);
 
+    const [supplies, setSupplies] = useState([]);
+
     const onlyDigits = (evt) => {
         if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
         {
@@ -167,6 +169,35 @@ function NewShipment() {
                 const goodsSnap = await goodsRef.get();
                 const goodsData = goodsSnap.data();
                 setDBGoods(goodsData.goods);
+
+                const carriersRef = db.collection("users").where("role", "==", "Carrier");
+                const carriersSnap = await carriersRef.get();
+				const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+				//console.log(allCarriers);     
+
+                let allSupplies = [];
+
+                for (let i = 0; i < allCarriers.length; i++) {
+                    const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
+                    const suppliesCollectionSnap = await suppliesCollectionRef.get();
+                    const allCollectionSupplies = suppliesCollectionSnap.docs.map(supplyDoc => ({
+                        ...supplyDoc.data(),
+                        id: supplyDoc.id,
+                    }));
+
+                    if (allCollectionSupplies.length > 0) {
+                        for (let j = 0; j < allCollectionSupplies.length; j++) {
+                            let newSupply = {
+                                ...allCollectionSupplies[j],
+                                uid: allCarriers[i].uid,
+                            };
+                            allSupplies.push(newSupply);
+                        }
+                    }
+                }
+                
+                console.log(allSupplies);
+                setSupplies(allSupplies);
 
 			} catch (err) {
 				console.error(err);
