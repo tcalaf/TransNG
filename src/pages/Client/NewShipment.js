@@ -21,8 +21,117 @@ function NewShipment() {
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
 	const history = useHistory();
-    const [startDate, setStartDate] = useState(new Date());
-    const [finishDate, setFinishDate] = useState(new Date());
+
+    const [startDate, setStartDate] = useState("");
+    const [startMaxDate, setStartMaxDate] = useState("");
+    const [finishDate, setFinishDate] = useState("");
+    const [finishMaxDate, setFinishMaxDate] = useState("");
+    const [startPlace, setStartPlace] = useState("");
+    const [finishPlace, setFinishPlace] = useState("");
+    const [goods, setGoods] = useState("");
+    const [goodsWeight, setGoodsWeight] = useState(-1);
+    const [goodsVolume, setGoodsVolume] = useState(-1);
+    const [goodsLength, setGoodsLength] = useState(-1);
+    const [goodsWidth, setGoodsWidth] = useState(-1);
+    const [goodsHeight, setGoodsHeight] = useState(-1);
+    const [maxBudget, setMaxBudget] = useState(-1);
+    const [contactMail, setContactMail] = useState("");
+    const [contactPhone, setContactPhone] = useState("");
+
+	const [defaultMail, setDefaultMail] = useState("");
+	const [defaultPhone, setDefaultPhone] = useState("");
+
+    const [dbGoods, setDBGoods] = useState([]);
+
+    const onlyDigits = (evt) => {
+        if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
+        {
+            evt.preventDefault();
+        }
+    }
+
+    const addDemand = () => {
+		var hasEmptyField = false
+        var emptyFields = "Please enter:\n"
+
+        if (startDate === "") {
+            emptyFields += "- Start Date\n"
+            hasEmptyField = true
+        }
+        if (startMaxDate === "") {
+            emptyFields += "- Start Max Date\n"
+            hasEmptyField = true
+        }
+        if (startPlace === "") {
+			emptyFields += "- Start Place\n"
+            hasEmptyField = true
+		}
+        if (finishDate === "") {
+			emptyFields += "- Finish Date\n"
+            hasEmptyField = true
+		}
+        if (finishMaxDate === "") {
+			emptyFields += "- Finish Max Date\n"
+            hasEmptyField = true
+		}
+        if (finishPlace === "") {
+			emptyFields += "- Finish Place\n"
+            hasEmptyField = true
+		}
+        if (goodsWeight < 0) {
+            emptyFields += "- Goods Weidght\n"
+            hasEmptyField = true
+        }
+        if (goodsVolume < 0) {
+            emptyFields += "- Goods Volume\n"
+            hasEmptyField = true
+        }
+        if (goodsLength < 0) {
+            emptyFields += "- Goods Length\n"
+            hasEmptyField = true
+        }
+        if (goodsWidth < 0) {
+            emptyFields += "- Goods Width\n"
+            hasEmptyField = true
+        }
+        if (goodsHeight < 0) {
+            emptyFields += "- Goods Height\n"
+            hasEmptyField = true
+        }
+        if (maxBudget < 0) {
+            emptyFields += "- Max Budget\n"
+            hasEmptyField = true
+        }
+		if (hasEmptyField) {
+            alert(emptyFields);
+            return;
+        }
+
+        db.collection("users").doc(user.uid).collection("demands").add({
+            start_date: startDate,
+            start_max_date: startMaxDate,
+            start_place: startPlace,
+			finish_date: finishDate,
+            finish_max_date: finishMaxDate,
+			finish_place: finishPlace,
+            goods: (goods === "" ? dbGoods[0] : goods),
+            goods_weight: goodsWeight,
+            goods_volume: goodsVolume,
+            goods_length: goodsLength,
+            goods_width: goodsWidth,
+            goods_height: goodsHeight,
+            max_budget: maxBudget,
+			contact_mail: (contactMail === "" ? defaultMail : contactMail),
+			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
+        })
+        .then((docRef) => {
+            alert("Demand added with ID: " + docRef.id)
+            console.log("Document written with ID: ", docRef.id);
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+        });
+    }
 
 	useEffect(() => {
 		if (loading) {
@@ -44,15 +153,24 @@ function NewShipment() {
 		}
 		async function fetchData() {
 			try {
-				const userRef = await db.collection("users").doc(user?.uid);
+				const userRef = db.collection("users").doc(user?.uid);
 				const userSnap = await userRef.get();
 				const data = userSnap.data();
 				setName(data.name);
 				setRole(data.role);
+				setDefaultPhone(data.phone);
+				setDefaultMail(data.email);                
+
 				console.log(data.name);
+
+                const goodsRef = db.collection("utilities").doc("goods");
+                const goodsSnap = await goodsRef.get();
+                const goodsData = goodsSnap.data();
+                setDBGoods(goodsData.goods);
+
 			} catch (err) {
 				console.error(err);
-				alert("An error occured while fetching user data");
+				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
@@ -82,83 +200,115 @@ function NewShipment() {
 			<div className="column menu">
                 <Form>
                     <h3>New Shipment</h3>
-                    <Form.Label>Start Date:</Form.Label>
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
-                    <Form.Label>Start Max Date:</Form.Label>
-                    <br></br>
-                    <Form.Text className="text-muted">
-                        in case trucks are unavailable for chosen Start Date
-                    </Form.Text>
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+						<Form.Label>Start Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Control placeholder="e.g.: 22 Jan 2022 04:00:00" onChange={(e) => setStartDate(e.target.value)}/>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+						<Form.Label>Start Max Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                            in case trucks are unavailable for chosen Start Date
+                        </Form.Text>
+						<Form.Control placeholder="e.g.: 23 Jan 2022 04:00:00" onChange={(e) => setStartMaxDate(e.target.value)}/>
+                    </Form.Group>
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Start Place:</Form.Label>
-                        <Form.Control placeholder="e.g.: Bucharest"/>
+                        <Form.Control placeholder="Bucharest" onChange={(e) => setStartPlace(e.target.value)}/>
                     </Form.Group>
-                    <Form.Label>Finish Date:</Form.Label>
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
-                    <Form.Label>Finish Max Date:</Form.Label>
-                    <br></br>
-                    <Form.Text className="text-muted">
-                        in case trucks are unavailable for chosen Finish Date
-                    </Form.Text>
-                    <DatePicker selected={finishDate} onChange={(date) => setStartDate(date)} />
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+						<Form.Label>Finish Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Control placeholder="ex: 24 Jan 2022 04:00:00" onChange={(e) => setFinishDate(e.target.value)}/>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formGridAddress1">
+						<Form.Label>Finish Max Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                            in case trucks are unavailable for chosen Finish Date
+                        </Form.Text>
+						<Form.Control placeholder="e.g.: 25 Jan 2022 04:00:00" onChange={(e) => setFinishMaxDate(e.target.value)}/>
+                    </Form.Group>
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Finish Place:</Form.Label>
-                        <Form.Control placeholder="e.g.: Constanta"/>
+                        <Form.Control placeholder="Constanta" onChange={(e) => setFinishPlace(e.target.value)}/>
                     </Form.Group>
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Goods Type:</Form.Label>
-                        <Form.Control placeholder="e.g.: Furniture"/>
+						<Form.Select onChange={(e) => setGoods(e.target.value)}>
+							{
+								dbGoods.map((elem) => 
+									<option value={elem}> {elem} </option>
+								)
+							}
+						</Form.Select>
                     </Form.Group>
+
                     <Form.Label>Dimensions</Form.Label>
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
                         weight (in kg):
                         </Form.Text>
-                        <Form.Control type="text" placeholder="e.g.: 100" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 100" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsWeight(e.target.valueAsNumber)} />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Text className="text-muted">
                         volume (in m³):
                         </Form.Text>
-                        <Form.Control type="text" placeholder="e.g.: 5" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsVolume(e.target.valueAsNumber)} />
                         </Form.Group>
                     </Row>
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridEmail">
                         <Form.Text>length (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsLength(e.target.valueAsNumber)} />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridPassword">
                         <Form.Text>width (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsWidth(e.target.valueAsNumber)} />
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridPassword">
                         <Form.Text>height (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" />
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsHeight(e.target.valueAsNumber)} />
                         </Form.Group>
                     </Row>
+
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Budget (in €):</Form.Label>
-                        <Form.Control placeholder="e.g.: 125"/>
+                        <Form.Control type="number" step="0.01" placeholder="e.g.: 125" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setMaxBudget(e.target.valueAsNumber)} />
                     </Form.Group>
+
                     <Row className="mb-3">
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Label>Contact Mail:</Form.Label>
-                        <Form.Control type="text" placeholder="johnsimth@client.com" />
+						<br></br>
+						<Form.Text className="text-muted">
+                        or leave it default:
+                        </Form.Text>
+                        <Form.Control type="text" placeholder={defaultMail} onChange={(e) => setContactMail(e.target.value)}/>
                         </Form.Group>
 
                         <Form.Group as={Col} controlId="formGridText">
                         <Form.Label>Contact Phone:</Form.Label>
-                        <Form.Control type="text" placeholder="+40712345678" />
+						<br></br>
+						<Form.Text className="text-muted">
+                        or leave it default:
+                        </Form.Text>
+                        <Form.Control type="text" placeholder={defaultPhone} onChange={(e) => setContactPhone(e.target.value)} />
                         </Form.Group>
                     </Row>
 
-                    <Button variant="primary" type="submit">
+                    <Button variant="primary" type="submit" onClick={(e) => {e.preventDefault(); addDemand();}}>
                         Add Shipment
                     </Button>
                 </Form>
