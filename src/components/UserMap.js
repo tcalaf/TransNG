@@ -31,7 +31,7 @@ const UserMap = ({visible, data}) => {
     }, []);
 
     useEffect(() => {
-        console.log("map props rerender")
+        console.log("map props rerender ", visible, data)
 
         if (!visible)
             return;
