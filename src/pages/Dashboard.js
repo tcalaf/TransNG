@@ -107,7 +107,7 @@ function Dashboard() {
 
 			} catch (err) {
 				console.error(err);
-				alert("An error occured while fetching user data");
+				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
@@ -135,7 +135,7 @@ function Dashboard() {
 					}
 					</Nav>
 					<Nav>
-					<Nav.Link href="#settings">Settings</Nav.Link>
+					<Nav.Link href="/dashboard">Settings</Nav.Link>
 					<Nav.Link eventKey={2} href="/contact">Contact</Nav.Link>
 					<Nav.Link onClick={logout}>Logout</Nav.Link>
 					</Nav>

@@ -16,7 +16,7 @@ import Col from 'react-bootstrap/Col';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function Dashboard() {
+function NewTrip() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
@@ -88,6 +88,8 @@ function Dashboard() {
 			full_price_per_km: fullPricePerKm,
 			contact_mail: (contactMail === "" ? defaultMail : contactMail),
 			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
+			demands: [],
+            current_place: "",
         })
         .then((docRef) => {
             alert("Supply added with ID: " + docRef.id)
@@ -138,7 +140,7 @@ function Dashboard() {
 
 			} catch (err) {
 				console.error(err);
-				alert("An error occured while fetching user data");
+				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
@@ -158,7 +160,7 @@ function Dashboard() {
 					<CarrierHeader></CarrierHeader>
 					</Nav>
 					<Nav>
-					<Nav.Link href="#settings">Settings</Nav.Link>
+					<Nav.Link href="/dashboard">Settings</Nav.Link>
 					<Nav.Link eventKey={2} href="/contact">Contact</Nav.Link>
 					<Nav.Link onClick={logout}>Logout</Nav.Link>
 					</Nav>
@@ -181,7 +183,11 @@ function Dashboard() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Start Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Start Date:</Form.Label>
+						<br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
 						<Form.Control placeholder="e.g.: 22 Jan 2022 04:00:00" onChange={(e) => setStartDate(e.target.value)}/>
                     </Form.Group>
 
@@ -191,7 +197,11 @@ function Dashboard() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Finish Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Finish Date:</Form.Label>
+						<br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
 						<Form.Control placeholder="ex: 23 Jan 2022 04:00:00" onChange={(e) => setFinishDate(e.target.value)}/>
                     </Form.Group>
 
@@ -244,4 +254,4 @@ function Dashboard() {
 		</div>
 	);
 }
-export default Dashboard;
+export default NewTrip;
