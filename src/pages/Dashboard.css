@@ -22,6 +22,7 @@
 
 .map {
 	width: 66.66%;
+	overflow-y: auto;
 }
 
 /* Clear floats after the columns */

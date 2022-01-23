@@ -7,13 +7,13 @@ import { useHistory } from "react-router";
 import "./../Dashboard.css";
 import { auth, db, logout } from "./../../firebase";
 import logo from './../../assets/delivery_light.png';
-import ClientHeader from "./../Client/ClientHeader";
+import ClientHeader from "./ClientHeader";
+import Supply from "./../Carrier/Supply"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 function NewShipment() {
@@ -233,12 +233,20 @@ function NewShipment() {
                     <h3>New Shipment</h3>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Start Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Start Date:</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
 						<Form.Control placeholder="e.g.: 22 Jan 2022 04:00:00" onChange={(e) => setStartDate(e.target.value)}/>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Start Max Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Start Max Date:</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
                         <br></br>
                         <Form.Text className="text-muted">
                             in case trucks are unavailable for chosen Start Date
@@ -252,12 +260,20 @@ function NewShipment() {
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Finish Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Finish Date:</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
 						<Form.Control placeholder="ex: 24 Jan 2022 04:00:00" onChange={(e) => setFinishDate(e.target.value)}/>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Finish Max Date: <br></br>(format: DD MMM YYYY HH:MM:SS)</Form.Label>
+						<Form.Label>Finish Max Date:</Form.Label>
+                        <br></br>
+                        <Form.Text className="text-muted">
+                        (format: DD MMM YYYY HH:MM:SS)
+                        </Form.Text>
                         <br></br>
                         <Form.Text className="text-muted">
                             in case trucks are unavailable for chosen Finish Date
@@ -344,6 +360,29 @@ function NewShipment() {
                     </Button>
                 </Form>
 			</div>
+            <div className="divmap map">
+                <h3>Available Trucks</h3>
+                <div style={{backgroundColor:"#D8EBF3", display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+                    {
+                        supplies.map((supply) => (
+                            <React.Fragment key={supply.id}>
+                                <Supply
+                                    id_truck={supply.id_truck}
+                                    start_date={supply.start_date}
+                                    start_place={supply.start_place}
+                                    finish_date={supply.finish_date}
+                                    finish_place={supply.finish_place}
+                                    empty_price_per_km={supply.empty_price_per_km}
+                                    full_price_per_km={supply.full_price_per_km}
+                                    contact_mail={supply.contact_mail}
+                                    contact_phone={supply.contact_phone}
+                                >
+                                </Supply>
+                            </React.Fragment>
+                        ))
+                    }
+                </div>
+            </div>
 		</div>
 	);
 }
