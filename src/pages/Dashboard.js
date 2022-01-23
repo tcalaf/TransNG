@@ -132,7 +132,7 @@ function Dashboard() {
 					}
 					</Nav>
 					<Nav>
-					<Nav.Link href="#settings">Settings</Nav.Link>
+					<Nav.Link href="/dashboard">Settings</Nav.Link>
 					<Nav.Link eventKey={2} href="/contact">Contact</Nav.Link>
 					<Nav.Link onClick={logout}>Logout</Nav.Link>
 					</Nav>

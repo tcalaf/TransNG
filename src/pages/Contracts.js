@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { auth, db, logout } from "./../../firebase";
+import { auth, db, logout } from "./../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
-import Demand from "./../Client/Demand"
+import Contract from "./Contract"
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
-import CarrierHeader from "./../Carrier/CarrierHeader";
-import logo from './../../assets/delivery_light.png';
+import CarrierHeader from "./Carrier/CarrierHeader";
+import ClientHeader from "./Client/ClientHeader";
+import AdminHeader from "./Admin/AdminHeader";
+import logo from './../assets/delivery_light.png';
 
 function ViewDemands() {
     const [user, loading, error] = useAuthState(auth);
@@ -16,6 +18,22 @@ function ViewDemands() {
     const history = useHistory();
 
     const [demands, setDemands] = useState([]);
+    const contracts = [
+        {
+            demand_id: "12rrgdbf8jedTpZ5lPOA",
+            payment_ddl: "1641996086",
+            price: "300",
+            special_instructions: "nimic",
+            supply_id: "WLCFCSBal9e3Vvx4Gelv"
+        },
+        {
+            demand_id: "oUWRMYmK4wu488bFSqvf",
+            payment_ddl: "1641996124",
+            price: "400",
+            special_instructions: "nimic2",
+            supply_id: "WLCFCSBal9e3Vvx4Gelv"
+        }
+    ]
 
 	useEffect(() => {
 		if (loading) {
@@ -72,6 +90,7 @@ function ViewDemands() {
                 
                 console.log(allDemands);
                 setDemands(allDemands);
+                console.log(contracts)
 
 			} catch (err) {
 				console.error(err);
@@ -92,7 +111,15 @@ function ViewDemands() {
 			<Navbar.Collapse id="responsive-navbar-nav">
 				<Nav className="me-auto">
 				<Nav.Link eventKey="disabled" disabled>Logged in as {name} | {role}</Nav.Link>
-				<CarrierHeader></CarrierHeader>
+				{
+						role === "Client" ? (
+							<ClientHeader></ClientHeader>
+						) : role === "Carrier" ? (
+							<CarrierHeader></CarrierHeader>
+						) :  (						
+							<AdminHeader></AdminHeader>
+						)
+					}
 				</Nav>
 				<Nav>
 				<Nav.Link href="/dashboard">Settings</Nav.Link>
@@ -104,26 +131,16 @@ function ViewDemands() {
 		</Navbar>
 		<div style={{backgroundColor:"#D8EBF3", display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
 			{
-				demands.filter((demand) => demand.supply_id == null).map((demand) => (
-					<React.Fragment key={demand.id}>
-						<Demand
-							start_date={demand.start_date}
-							start_max_date={demand.start_max_date}
-							start_place={demand.start_place}
-							finish_date={demand.finish_date}
-							finish_max_date={demand.finish_max_date}
-							finish_place={demand.finish_place}
-							goods={demand.goods}
-							goods_weight={demand.goods_weight}
-							goods_volume={demand.goods_volume}
-							goods_length={demand.goods_length}
-							goods_width={demand.goods_width}
-							goods_height={demand.goods_height}
-							max_budget={demand.max_budget}
-							contact_mail={demand.contact_mail}
-							contact_phone={demand.contact_phone}
+				contracts.map((contract) => (
+					<React.Fragment key={contract.id}>
+						<Contract
+							price={contract.price}
+							special_instructions={contract.special_instructions}
+							payment_ddl={contract.payment_ddl}
+							demand_id={contract.demand_id}
+							supply_id={contract.supply_id}
 						>
-						</Demand>
+						</Contract>
 					</React.Fragment>
 				))
 			}

@@ -25,7 +25,6 @@ const Demand=(props)=>{
                         <ListGroupItem>Budget: {props.max_budget}</ListGroupItem>
                         <ListGroupItem>Contact Mail: {props.contact_mail}</ListGroupItem>
                         <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
-                        <ListGroupItem>Supply ID: {props.supply_id}</ListGroupItem>
                     </ListGroup>
                     <Card.Body>
                         <Card.Link href="#">Select</Card.Link>
