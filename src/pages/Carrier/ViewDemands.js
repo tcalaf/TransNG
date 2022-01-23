@@ -52,7 +52,7 @@ function ViewDemands() {
                 let allDemands = [];
 
                 for (let i = 0; i < allClients.length; i++) {
-                    const demandsCollectionRef = db.collection("users").doc(allClients[i].uid).collection("demands");
+                    const demandsCollectionRef = db.collection("users").doc(allClients[i].uid).collection("demands").where("supply", "==", null);
                     const demandsCollectionSnap = await demandsCollectionRef.get();
                     const allCollectionDemands = demandsCollectionSnap.docs.map(demandDoc => ({
                         ...demandDoc.data(),
@@ -104,7 +104,7 @@ function ViewDemands() {
 		</Navbar>
 		<div style={{backgroundColor:"#D8EBF3", display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
 			{
-				demands.filter((demand) => demand.supply_id == null).map((demand) => (
+				demands.map((demand) => (
 					<React.Fragment key={demand.id}>
 						<Demand
 							start_date={demand.start_date}

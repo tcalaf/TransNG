@@ -88,6 +88,8 @@ function NewTrip() {
 			full_price_per_km: fullPricePerKm,
 			contact_mail: (contactMail === "" ? defaultMail : contactMail),
 			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
+			demands: [],
+            current_place: "",
         })
         .then((docRef) => {
             alert("Supply added with ID: " + docRef.id)

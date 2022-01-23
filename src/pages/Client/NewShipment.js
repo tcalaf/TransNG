@@ -125,6 +125,7 @@ function NewShipment() {
             max_budget: maxBudget,
 			contact_mail: (contactMail === "" ? defaultMail : contactMail),
 			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
+            supply: null,
         })
         .then((docRef) => {
             alert("Demand added with ID: " + docRef.id)
@@ -178,7 +179,7 @@ function NewShipment() {
                 let allSupplies = [];
 
                 for (let i = 0; i < allCarriers.length; i++) {
-                    const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
+                    const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies").where("demands", "==", []);
                     const suppliesCollectionSnap = await suppliesCollectionRef.get();
                     const allCollectionSupplies = suppliesCollectionSnap.docs.map(supplyDoc => ({
                         ...supplyDoc.data(),
