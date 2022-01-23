@@ -111,14 +111,14 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 	for (let i = 2; i < locations.length; i = i + 2) {
 		order_pairs.push({
 			attributes: {
-				FirstOrderName: locations[i]+"_demand_"+demands[i/2-1].id,
-				SecondOrderName: locations[i+1]+"_demand_"+demands[i/2-1].id
+				FirstOrderName: locations[i]+"_demand_"+supply.demands[i/2-1].demand_id,
+				SecondOrderName: locations[i+1]+"_demand_"+supply.demands[i/2-1].demand_id
 			}
 		});
 
 		orders.push({
 			attributes: {
-				Name: locations[i]+"_demand_"+demands[i/2-1].id,
+				Name: locations[i]+"_demand_"+supply.demands[i/2-1].demand_id,
 				DeliveryQuantities: null,
 				PickupQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
         TimeWindowStart1: Date.parse(demands[i/2-1].start_date),
@@ -128,7 +128,7 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		});
 		orders.push({
 			attributes: {
-				Name: locations[i+1]+"_demand_"+demands[i/2-1].id,
+				Name: locations[i+1]+"_demand_"+supply.demands[i/2-1].demand_id,
 				PickupQuantities: null,
 				DeliveryQuantities: `${demands[i/2-1].goods_weight} ${demands[i/2-1].goods_length} ${demands[i/2-1].goods_width} ${demands[i/2-1].goods_height} ${demands[i/2-1].goods_volume}`,
         TimeWindowStart1: Date.parse(demands[i/2-1].finish_date),
