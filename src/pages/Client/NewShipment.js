@@ -377,6 +377,8 @@ function NewShipment() {
                                     full_price_per_km={supply.full_price_per_km}
                                     contact_mail={supply.contact_mail}
                                     contact_phone={supply.contact_phone}
+                                    id={supply.id}
+                                    uid={supply.uid}
                                 >
                                 </Supply>
                             </React.Fragment>

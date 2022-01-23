@@ -4,6 +4,11 @@ import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Card from 'react-bootstrap/Card';
 
 const Supply=(props)=>{
+
+    const generateContract = () => {
+        return true;
+    }
+
     return(
         <React.Fragment>
             <>
@@ -22,7 +27,7 @@ const Supply=(props)=>{
                         <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
                     </ListGroup>
                     <Card.Body>
-                        <Card.Link href="#">Select</Card.Link>
+                        <Card.Link onClick={() => generateContract()} href="#">Select</Card.Link>
                     </Card.Body>
                 </Card>
             </>
