@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Contracts from "./pages/Contracts";
 import NewTrip from "./pages/Carrier/NewTrip";
 import NewShipment from "./pages/Client/NewShipment";
+import ChooseOffer from "./pages/Client/ChooseOffer";
 import Contact from "./pages/Contact";
 import esriConfig from "@arcgis/core/config";
 import { useEffect } from "react";
@@ -31,6 +32,7 @@ function App() {
           <Route exact path="/contact" component={Contact} />
           <Route exact path="/newoffers" component={ViewDemands} />
           <Route exact path="/contracts" component={Contracts} />
+          <Route exact path="/chooseoffer" component={ChooseOffer} />
         </Switch>
       </Router>
     </div>

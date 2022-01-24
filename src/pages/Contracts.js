@@ -129,7 +129,7 @@ function ViewDemands() {
 			</Navbar.Collapse>
 			</Container>
 		</Navbar>
-		<div style={{backgroundColor:"#D8EBF3", display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+		<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
 			{
 				contracts.map((contract) => (
 					<React.Fragment key={contract.id}>

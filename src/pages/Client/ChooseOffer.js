@@ -7,17 +7,18 @@ import { useHistory } from "react-router";
 import "./../Dashboard.css";
 import { auth, db, logout } from "./../../firebase";
 import logo from './../../assets/delivery_light.png';
-import lorry from './../../assets/white-lorry-transport.png';
 import ClientHeader from "./ClientHeader";
 import Supply from "./../Carrier/Supply"
+import Demand from "./Demand"
+import Button from 'react-bootstrap/Button';
+import ViewDemands from "./../Carrier/ViewDemands"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import "react-datepicker/dist/react-datepicker.css";
 
-function NewShipment() {
+function ChooseOffer() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
@@ -45,6 +46,7 @@ function NewShipment() {
     const [dbGoods, setDBGoods] = useState([]);
 
     const [supplies, setSupplies] = useState([]);
+    const [demands, setDemands] = useState([]);
 
     const onlyDigits = (evt) => {
         if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
@@ -201,6 +203,34 @@ function NewShipment() {
                 console.log(allSupplies);
                 setSupplies(allSupplies);
 
+                const clientsRef = db.collection("users").where("role", "==", "Client");
+                const clientsSnap = await clientsRef.get();
+				const allClients = clientsSnap.docs.map(clientDoc => clientDoc.data());    
+
+                let allDemands = [];
+
+                for (let i = 0; i < allClients.length; i++) {
+                    const demandsCollectionRef = db.collection("users").doc(allClients[i].uid).collection("demands").where("supply", "==", null);
+                    const demandsCollectionSnap = await demandsCollectionRef.get();
+                    const allCollectionDemands = demandsCollectionSnap.docs.map(demandDoc => ({
+                        ...demandDoc.data(),
+                        id: demandDoc.id,
+                    }));
+
+                    if (allCollectionDemands.length > 0) {
+                        for (let j = 0; j < allCollectionDemands.length; j++) {
+                            let newDemand = {
+                                ...allCollectionDemands[j],
+                                uid: allClients[i].uid,
+                            };
+                            allDemands.push(newDemand);
+                        }
+                    }
+                }
+                
+                console.log(allDemands);
+                setDemands(allDemands);
+
 			} catch (err) {
 				console.error(err);
 				//alert("An error occured while fetching user data");
@@ -230,142 +260,64 @@ function NewShipment() {
 				</Navbar.Collapse>
 				</Container>
 			</Navbar>
-			<div className="column menu">
-                <Form>
-                    <h3>New Shipment</h3>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Start Date:</Form.Label>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                        (format: DD MMM YYYY HH:MM:SS)
-                        </Form.Text>
-						<Form.Control placeholder="e.g.: 22 Jan 2022 04:00:00" onChange={(e) => setStartDate(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Start Max Date:</Form.Label>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                        (format: DD MMM YYYY HH:MM:SS)
-                        </Form.Text>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                            in case trucks are unavailable for chosen Start Date
-                        </Form.Text>
-						<Form.Control placeholder="e.g.: 23 Jan 2022 04:00:00" onChange={(e) => setStartMaxDate(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Start Place:</Form.Label>
-                        <Form.Control placeholder="Bucharest" onChange={(e) => setStartPlace(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Finish Date:</Form.Label>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                        (format: DD MMM YYYY HH:MM:SS)
-                        </Form.Text>
-						<Form.Control placeholder="ex: 24 Jan 2022 04:00:00" onChange={(e) => setFinishDate(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-						<Form.Label>Finish Max Date:</Form.Label>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                        (format: DD MMM YYYY HH:MM:SS)
-                        </Form.Text>
-                        <br></br>
-                        <Form.Text className="text-muted">
-                            in case trucks are unavailable for chosen Finish Date
-                        </Form.Text>
-						<Form.Control placeholder="e.g.: 25 Jan 2022 04:00:00" onChange={(e) => setFinishMaxDate(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Finish Place:</Form.Label>
-                        <Form.Control placeholder="Constanta" onChange={(e) => setFinishPlace(e.target.value)}/>
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Goods Type:</Form.Label>
-						<Form.Select onChange={(e) => setGoods(e.target.value)}>
-							{
-								dbGoods.map((elem) => 
-									<option value={elem}> {elem} </option>
-								)
-							}
-						</Form.Select>
-                    </Form.Group>
-
-                    <Form.Label>Dimensions</Form.Label>
-                    <Row className="mb-3">
-                        <Form.Group as={Col} controlId="formGridText">
-                        <Form.Text className="text-muted">
-                        weight (in kg):
-                        </Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 100" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsWeight(e.target.valueAsNumber)} />
-                        </Form.Group>
-
-                        <Form.Group as={Col} controlId="formGridText">
-                        <Form.Text className="text-muted">
-                        volume (in m³):
-                        </Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsVolume(e.target.valueAsNumber)} />
-                        </Form.Group>
-                    </Row>
-                    <Row className="mb-3">
-                        <Form.Group as={Col} controlId="formGridEmail">
-                        <Form.Text>length (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 5" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsLength(e.target.valueAsNumber)} />
-                        </Form.Group>
-
-                        <Form.Group as={Col} controlId="formGridPassword">
-                        <Form.Text>width (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsWidth(e.target.valueAsNumber)} />
-                        </Form.Group>
-
-                        <Form.Group as={Col} controlId="formGridPassword">
-                        <Form.Text>height (in m):</Form.Text>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 1" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setGoodsHeight(e.target.valueAsNumber)} />
-                        </Form.Group>
-                    </Row>
-
-                    <Form.Group className="mb-3" controlId="formGridAddress1">
-                        <Form.Label>Budget (in €):</Form.Label>
-                        <Form.Control type="number" step="0.01" placeholder="e.g.: 125" onKeyPress={(e) => onlyDigits(e)} onChange={(e) => setMaxBudget(e.target.valueAsNumber)} />
-                    </Form.Group>
-
-                    <Row className="mb-3">
-                        <Form.Group as={Col} controlId="formGridText">
-                        <Form.Label>Contact Mail:</Form.Label>
-						<br></br>
-						<Form.Text className="text-muted">
-                        or leave it default:
-                        </Form.Text>
-                        <Form.Control type="text" placeholder={defaultMail} onChange={(e) => setContactMail(e.target.value)}/>
-                        </Form.Group>
-
-                        <Form.Group as={Col} controlId="formGridText">
-                        <Form.Label>Contact Phone:</Form.Label>
-						<br></br>
-						<Form.Text className="text-muted">
-                        or leave it default:
-                        </Form.Text>
-                        <Form.Control type="text" placeholder={defaultPhone} onChange={(e) => setContactPhone(e.target.value)} />
-                        </Form.Group>
-                    </Row>
-
-                    <Button variant="primary" type="submit" onClick={(e) => {e.preventDefault(); addDemand();}}>
-                        Add Shipment
-                    </Button>
-                </Form>
-			</div>
-            <div className="divmap map">
-                <img src={lorry} alt="Lorry" width="100%" height="100%" style={{objectFit: 'contain'}}/>
+            <h3 className="halfscreen-header">My Demands</h3>
+            <h3 className="halfscreen-header">Offers</h3>
+            <div className="halfscreen">
+                <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+                    {
+                        demands.map((demand) => (
+                            <React.Fragment key={demand.id}>
+                                <Demand
+                                    start_date={demand.start_date}
+                                    start_max_date={demand.start_max_date}
+                                    start_place={demand.start_place}
+                                    finish_date={demand.finish_date}
+                                    finish_max_date={demand.finish_max_date}
+                                    finish_place={demand.finish_place}
+                                    goods={demand.goods}
+                                    goods_weight={demand.goods_weight}
+                                    goods_volume={demand.goods_volume}
+                                    goods_length={demand.goods_length}
+                                    goods_width={demand.goods_width}
+                                    goods_height={demand.goods_height}
+                                    max_budget={demand.max_budget}
+                                    contact_mail={demand.contact_mail}
+                                    contact_phone={demand.contact_phone}
+                                >
+                                </Demand>
+                            </React.Fragment>
+                        ))
+                    }
+                </div>
             </div>
+            <div className="halfscreen">
+                <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+                    {
+                        supplies.map((supply) => (
+                            <React.Fragment key={supply.id}>
+                                <Supply
+                                    id_truck={supply.id_truck}
+                                    start_date={supply.start_date}
+                                    start_place={supply.start_place}
+                                    finish_date={supply.finish_date}
+                                    finish_place={supply.finish_place}
+                                    empty_price_per_km={supply.empty_price_per_km}
+                                    full_price_per_km={supply.full_price_per_km}
+                                    contact_mail={supply.contact_mail}
+                                    contact_phone={supply.contact_phone}
+                                    id={supply.id}
+                                    uid={supply.uid}
+                                >
+                                </Supply>
+                            </React.Fragment>
+                        ))
+                    }
+                </div>
+            </div>
+            <Button variant="primary" style={{margin: '0 auto', display: 'block'}}>
+                Generate Contract
+            </Button>
 		</div>
 	);
 }
-export default NewShipment;
+export default ChooseOffer;
