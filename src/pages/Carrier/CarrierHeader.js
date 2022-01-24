@@ -5,6 +5,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 const CarrierHeader=()=>{
     return(
         <React.Fragment>
+        <Nav.Link href="/trucks">Trucks</Nav.Link>
         <Nav.Link href="/newoffers">New Offers</Nav.Link>
         <Nav.Link href="/trip/new">New Trip</Nav.Link>
         <Nav.Link href="/contracts">Contracts</Nav.Link>
