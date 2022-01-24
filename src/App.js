@@ -15,7 +15,7 @@ import ViewDemands from "./pages/Carrier/ViewDemands";
 function App() {
 
   useEffect(() => {
-    esriConfig.apiKey = "AAPKc5f3616cf67f4d75b40a55ac7d9357a0BSSEafIvgKprHZSG83ytAkdcw0PW7OBgspAWTc_PnKm9xV3QT_8wWG208yxgDRyT";
+    esriConfig.apiKey = "AAPKc2881b542d424279bc51a2aedf3ad8fdFJumiXjZuUnhAKsG-LoUvzEBeXZRsfTjUIGCq1_hycbnqKoTVBLzhFLHeOIwR7eO";
   }, [])
 
 

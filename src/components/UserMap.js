@@ -4,7 +4,7 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { getRouteLayersFeatures, newTruckGraphic } from './utils';
+import { getRouteLayersFeatures, getTrucksGraphics, newTruckGraphic } from './utils';
 
 /* data (required) structure: [{
     supply: supplyDbObj,
@@ -36,24 +36,20 @@ const UserMap = ({visible, data}) => {
         if (!visible)
             return;
 
-        const suppliesGraphics = data.map((x) => {
-            return newTruckGraphic(
-                JSON.parse(x.supply.current_place),
-                (Date.parse(x.supply.start_date) < Date.now()) ? "red" : "green",
-                x.supply
-            );
-        });
-        trucksLayer.current.removeAll();
-        trucksLayer.current.addMany(suppliesGraphics);
+        async function initMap() {
+            const routeFeatures = await getRouteLayersFeatures(data);
+            routesLayer.current.removeAll();
+            routesLayer.current.addMany(routeFeatures);
+            console.log("aa\n", routeFeatures)
 
-        async function buildRouteLayer() {
-           const routeFeatures = await getRouteLayersFeatures(data);
-           routesLayer.current.removeAll();
-           routesLayer.current.addMany(routeFeatures);
-           console.log("aa\n", routeFeatures)
+            const suppliesGraphics = getTrucksGraphics(data, routesLayer.current.graphics.toArray());
+            console.log("trucks", suppliesGraphics)
+            trucksLayer.current.removeAll();
+            trucksLayer.current.addMany(suppliesGraphics);
+            console.log("bb", trucksLayer)
         }
-        
-        buildRouteLayer();
+    
+        initMap();
     }, [data, visible]);
 
     return <div className="mapDiv" ref={mapDiv}></div>;

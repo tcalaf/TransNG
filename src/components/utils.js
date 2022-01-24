@@ -76,7 +76,19 @@ export const newTruckGraphic = (coords, color, attributes = {}) => {
         ]
       })
     })
-  }
+}
+
+export const getTrucksGraphics = (data, routeGraphics) => {
+	const trucks = [];
+	for (let i = 0; i < data.length; i++) {
+		trucks.push(newTruckGraphic(
+			{x: routeGraphics[i].geometry.paths[0][0][0], y: routeGraphics[i].geometry.paths[0][0][1]},
+			(Date.parse(data[i].supply.start_date) < Date.now()) ? "red" : "green",
+			data[i].supply
+		));
+	}
+	return trucks;
+}
 
 // supply is data from db, demands is array of demands as from db
 export const fetchRouteDetails = async (supply, truck, demands=[]) => {
@@ -209,6 +221,5 @@ export const getRouteLayersFeatures = async (data) => {
     const result = await fetchRouteDetails(data[i].supply, data[i].truck, data[i].demands);
     features = features.concat(getRouteLayerFeatures(result.results[2].value.features));
   }
-  console.log(features)
   return features;
 }
