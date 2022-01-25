@@ -25,14 +25,38 @@ const UserMap = ({visible, data}) => {
         scale: 1000000,
         center: [26.10298000000006, 44.43429000000003],
     }));
-
+    
     useEffect(() => {
         console.log("map moun")
+        const timer = setInterval(()=> {
+            const trucks = [];
+            const now = Date.now();
+            for (let i = 0; i < trucksLayer.current.graphics.length; i += 1) {
+                const route = routesLayer.current.graphics.getItemAt(i);
+                const oldTruck = trucksLayer.current.graphics.getItemAt(i);
+
+                const elapsedTimeRatio = (now - route.attributes.StartTime) / (route.attributes.TotalTime * 60000);
+                const newPos = (route.attributes.StartTime > now) ? 0 : Math.min(Math.floor((route.geometry.paths[0].length-1) * elapsedTimeRatio), route.geometry.paths[0].length-1);
+
+                trucks.push(newTruckGraphic(
+                    {
+                        x: route.geometry.paths[0][newPos][0],
+                        y: route.geometry.paths[0][newPos][1],
+                    }, 
+                    oldTruck.symbol.color,
+                    oldTruck.attributes
+                ));
+            }
+            trucksLayer.current.removeAll();
+            trucksLayer.current.addMany(trucks);
+        }, 10000);
+        return () => {
+            clearInterval(timer);
+        }
     }, []);
 
     useEffect(() => {
         console.log("map props rerender ", visible, data)
-
         if (!visible)
             return;
 
@@ -40,15 +64,12 @@ const UserMap = ({visible, data}) => {
             const routeFeatures = await getRouteLayersFeatures(data);
             routesLayer.current.removeAll();
             routesLayer.current.addMany(routeFeatures);
-            console.log("aa\n", routeFeatures)
 
             const suppliesGraphics = getTrucksGraphics(data, routesLayer.current.graphics.toArray());
-            console.log("trucks", suppliesGraphics)
             trucksLayer.current.removeAll();
             trucksLayer.current.addMany(suppliesGraphics);
-            console.log("bb", trucksLayer)
         }
-    
+
         initMap();
     }, [data, visible]);
 

@@ -80,11 +80,17 @@ export const newTruckGraphic = (coords, color, attributes = {}) => {
 
 export const getTrucksGraphics = (data, routeGraphics) => {
 	const trucks = [];
+  const now = Date.now();
+
 	for (let i = 0; i < data.length; i++) {
-		trucks.push(newTruckGraphic(
-			{x: routeGraphics[i].geometry.paths[0][0][0], y: routeGraphics[i].geometry.paths[0][0][1]},
+    const route = routeGraphics[i];
+    const elapsedTimeRatio = (now - route.attributes.StartTime) / (route.attributes.TotalTime * 60000);
+    const pos = (route.attributes.StartTime > now) ? 0 : Math.min(Math.floor((route.geometry.paths[0].length-1) * elapsedTimeRatio), route.geometry.paths[0].length-1);
+		
+    trucks.push(newTruckGraphic(
+			{x: route.geometry.paths[0][pos][0], y: route.geometry.paths[0][pos][1]},
 			(Date.parse(data[i].supply.start_date) < Date.now()) ? "red" : "green",
-			data[i].supply
+		  data[i].supply
 		));
 	}
 	return trucks;
