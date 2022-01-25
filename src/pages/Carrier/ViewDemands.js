@@ -18,6 +18,8 @@ function ViewDemands() {
     const history = useHistory();
 
     const [demands, setDemands] = useState([]);
+	const [demandSelected, setDemandSelected] = useState([]);
+	const [supplySelected, setSupplySelected] = useState([]);
 	const [supplies, setSupplies] = useState([]);
 
 	const [defaultMail, setDefaultMail] = useState("");
@@ -146,58 +148,8 @@ function ViewDemands() {
 			</Navbar.Collapse>
 			</Container>
 		</Navbar>
-		{/* <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
-			{
-				demands.map((demand) => (
-					<React.Fragment key={demand.id}>
-						<Demand
-							start_date={demand.start_date}
-							start_max_date={demand.start_max_date}
-							start_place={demand.start_place}
-							finish_date={demand.finish_date}
-							finish_max_date={demand.finish_max_date}
-							finish_place={demand.finish_place}
-							goods={demand.goods}
-							goods_weight={demand.goods_weight}
-							goods_volume={demand.goods_volume}
-							goods_length={demand.goods_length}
-							goods_width={demand.goods_width}
-							goods_height={demand.goods_height}
-							max_budget={demand.max_budget}
-							contact_mail={demand.contact_mail}
-							contact_phone={demand.contact_phone}
-						>
-						</Demand>
-					</React.Fragment>
-				))
-			}
-		</div> */}
-		<h3 className="halfscreen-header">Offers</h3>
-		<h3 className="halfscreen-header">Demands</h3>
-		<div className="halfscreen">
-			<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
-				{
-					supplies.map((supply) => (
-						<React.Fragment key={supply.id}>
-							<Supply
-								id_truck={supply.id_truck}
-								start_date={supply.start_date}
-								start_place={supply.start_place}
-								finish_date={supply.finish_date}
-								finish_place={supply.finish_place}
-								empty_price_per_km={supply.empty_price_per_km}
-								full_price_per_km={supply.full_price_per_km}
-								contact_mail={supply.contact_mail}
-								contact_phone={supply.contact_phone}
-								id={supply.id}
-								uid={supply.uid}
-							>
-							</Supply>
-						</React.Fragment>
-					))
-				}
-			</div>
-		</div>
+		<h3 className="halfscreen-header">My Demands</h3>
+		<h3 className="halfscreen-header">Available Offers</h3>
 		<div className="halfscreen">
 			<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
 				{
@@ -219,8 +171,36 @@ function ViewDemands() {
 								max_budget={demand.max_budget}
 								contact_mail={demand.contact_mail}
 								contact_phone={demand.contact_phone}
+								selected={demandSelected == demand ? true : false}
+								onClick={() => {setDemandSelected(demand); console.log(demandSelected)}}
 							>
 							</Demand>
+						</React.Fragment>
+					))
+				}
+			</div>
+		</div>
+		<div className="halfscreen">
+			<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+				{
+					supplies.map((supply) => (
+						<React.Fragment key={supply.id}>
+							<Supply
+								id_truck={supply.id_truck}
+								start_date={supply.start_date}
+								start_place={supply.start_place}
+								finish_date={supply.finish_date}
+								finish_place={supply.finish_place}
+								empty_price_per_km={supply.empty_price_per_km}
+								full_price_per_km={supply.full_price_per_km}
+								contact_mail={supply.contact_mail}
+								contact_phone={supply.contact_phone}
+								id={supply.id}
+								uid={supply.uid}
+								selected={supplySelected == supply ? true : false}
+								onClick={() => {setSupplySelected(supply); console.log(supplySelected)}}
+							>
+							</Supply>
 						</React.Fragment>
 					))
 				}

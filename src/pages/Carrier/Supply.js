@@ -2,17 +2,14 @@ import React from 'react';
 import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Card from 'react-bootstrap/Card';
+import { Button } from 'react-bootstrap';
 
 const Supply=(props)=>{
-
-    const generateContract = () => {
-        return true;
-    }
 
     return(
         <React.Fragment>
             <>
-                <Card style={{ width: '20rem', margin: '1rem'}}>
+                <Card bg={ props.selected ? "warning" : "light" } style={{ width: '20rem', margin: '1rem'}}>
                     <Card.Body>
                         <Card.Title>Truck ID: {props.id_truck}</Card.Title>
                     </Card.Body>
@@ -26,9 +23,7 @@ const Supply=(props)=>{
                         <ListGroupItem>Contact Mail: {props.contact_mail}</ListGroupItem>
                         <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
                     </ListGroup>
-                    <Card.Body>
-                        <Card.Link onClick={() => generateContract()} href="#">Select</Card.Link>
-                    </Card.Body>
+                    <Button variant="primary" onClick={() => props.onClick()}>Select</Button>
                 </Card>
             </>
         </React.Fragment>
