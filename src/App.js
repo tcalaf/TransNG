@@ -7,6 +7,7 @@ import Contracts from "./pages/Contracts";
 import NewTrip from "./pages/Carrier/NewTrip";
 import NewShipment from "./pages/Client/NewShipment";
 import ChooseOffer from "./pages/Client/ChooseOffer";
+import CarrierTrucks from "./pages/Carrier/CarrierTrucks";
 import Contact from "./pages/Contact";
 import esriConfig from "@arcgis/core/config";
 import { useEffect } from "react";
@@ -27,12 +28,13 @@ function App() {
           <Route exact path="/register" component={Register} />
           <Route exact path="/reset" component={Reset} />
           <Route exact path="/dashboard" component={Dashboard} />
-          <Route exact path="/trip/new" component={NewTrip} />
+          <Route exact path="/offer/new" component={NewTrip} />
           <Route exact path="/ship/new" component={NewShipment} />
           <Route exact path="/contact" component={Contact} />
-          <Route exact path="/newoffers" component={ViewDemands} />
+          <Route exact path="/choosedemand" component={ViewDemands} />
           <Route exact path="/contracts" component={Contracts} />
           <Route exact path="/chooseoffer" component={ChooseOffer} />
+          <Route exact path="/trucks" component={CarrierTrucks} />
         </Switch>
       </Router>
     </div>
