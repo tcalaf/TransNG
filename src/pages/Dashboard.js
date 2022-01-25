@@ -5,7 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import "./Dashboard.css";
-import { auth, logout, fetchUser, fetchCarriers, fetchSupplies, fetchTruck, fetchDemand } from "../firebase";
+import { auth, logout, fetchUser, fetchCarriers, fetchSupplies, fetchTruck, fetchDemandsforSupply } from "../firebase";
 import logo from './../assets/delivery_light.png';
 import CarrierHeader from "./Carrier/CarrierHeader";
 import ClientHeader from "./Client/ClientHeader";
@@ -46,7 +46,7 @@ function Dashboard() {
 		const truck = await fetchTruck(supplyUID, supply.id_truck);
 		console.log(truck);
 
-		const demands = await fetchDemand(supply.demands);
+		const demands = await fetchDemandsforSupply(supply.demands);
 		console.log(demands);
 		
 		const mapDataObj = {
@@ -60,6 +60,7 @@ function Dashboard() {
 
 	const getMapDataCarrier = async () => {
 		console.log("Fetching Carrier map data");
+		let userMapData = [];
 
 		let supplies = await fetchSupplies(carrier.uid);
 		console.log(supplies);
@@ -67,7 +68,6 @@ function Dashboard() {
 		supplies = supplies.filter(deleteOldSupplies);
 		console.log(supplies);		
 
-		let userMapData = [];
 		for (let i = 0; i < supplies.length; i++) {
 			const supply = supplies[i];
 			userMapData.push(await createMapDataObjectForSupply(supply, user?.uid));

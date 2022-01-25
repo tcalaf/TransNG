@@ -60,14 +60,33 @@ const logout = () => {
 	auth.signOut();
 };
 
-const fetchSuppliesCollection
+// Returns client's contracts
+const fetchContractsClient = async (uid) => {
+	const contractsRef = db.collection("contracts").where("demand.demand_uid", "==", uid);
+	return fetchContracts(contractsRef);
+}
+
+// Returns carrier's contracts
+const fetchContractsCarrier = async (uid) => {
+	const contractsRef = db.collection("contracts").where("supply.supply_uid", "==", uid);
+	return fetchContracts(contractsRef);
+}
+
+const fetchContracts = async (contractsRef) => {
+	const contractsSnap = await contractsRef.get();
+	const allContracts = contractsSnap.docs.map(contractDoc => ({
+		...contractDoc.data(),
+		id: contractDoc.id,
+	}));
+	return allContracts;
+}
 
 // Returns demands chosen by specified supply
 const fetchDemandsforSupply = async (demandsData) => {
 	let demands = [];
 	for (let i = 0; i < demandsData.length; i++) {
 		const demandData = demandsData[i];
-		const demand = await fetchDemandDoc(demandData.demand_uid, demandData.demand_id);
+		const demand = await fetchDemand(demandData.demand_uid, demandData.demand_id);
 		demands.push(demand);
 	}
 	return demands;
@@ -129,4 +148,6 @@ export {
 	fetchTruck,
 	fetchDemand,
 	fetchDemandsforSupply,
+	fetchContractsClient,
+	fetchContractsCarrier,
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { auth, db, logout } from "./../firebase";
+import { auth, db, fetchContractsCarrier, fetchContractsClient, fetchUser, logout } from "./../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import Contract from "./Contract"
@@ -11,42 +11,31 @@ import ClientHeader from "./Client/ClientHeader";
 import AdminHeader from "./Admin/AdminHeader";
 import logo from './../assets/delivery_light.png';
 
-function ViewDemands() {
+function Contracts() {
     const [user, loading, error] = useAuthState(auth);
     const [name, setName] = useState("");
     const [role, setRole] = useState("");
 	const [contracts, setContracts] = useState([]);
     const history = useHistory();
 
-	const fetchContractsClient = async () => {
+	const getContractsClient = async () => {
 		console.log("Fetching Client contracts!")
-		const contractsRef = db.collection("contracts").where("demand.demand_uid", "==", user.uid);
-		const contractsSnap = await contractsRef.get();
-		const allContracts = contractsSnap.docs.map(contractDoc => ({
-			...contractDoc.data(),
-			id: contractDoc.id,
-		}));
-		setContracts(allContracts);
+		const contracts = await fetchContractsClient(user.uid);
+		setContracts(contracts);
 	}
 
-	const fetchContractsCarrier = async () => {
+	const getContractsCarrier = async () => {
 		console.log("Fetching Carrier contracts!")
-		const contractsRef = db.collection("contracts").where("supply.supply_uid", "==", user.uid);
-		const contractsSnap = await contractsRef.get();
-		const allContracts = contractsSnap.docs.map(contractDoc => ({
-			...contractDoc.data(),
-			id: contractDoc.id,
-		}));
-		setContracts(allContracts);
+		const contracts = await fetchContractsCarrier(user.uid);
+		setContracts(contracts);
 	}
 
 	const fetchUserData = async () => {
 		console.log("Fetching user data");
-		const userRef = db.collection("users").doc(user?.uid);
-		const userSnap = await userRef.get();
-		const data = userSnap.data();
+		const data = await fetchUser(user?.uid);
+		console.log(data);
 		setName(data.name);
-		setRole(data.role);           
+		setRole(data.role);       
 	}
 
 	useEffect(() => {
@@ -75,7 +64,7 @@ function ViewDemands() {
 			if (!user) return;
 			try {
 				fetchUserData();
-				role === "Carrier" ? fetchContractsCarrier() : fetchContractsClient();
+				role === "Carrier" ? getContractsCarrier() : getContractsClient();
 			} catch (err) {
 				console.error(err);
 			}			
@@ -134,4 +123,4 @@ function ViewDemands() {
   );
 }
 
-export default ViewDemands;
+export default Contracts;
