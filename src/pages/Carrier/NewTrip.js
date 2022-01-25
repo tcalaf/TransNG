@@ -170,7 +170,7 @@ function NewTrip() {
 			<div className="column menu">
 				{/* <CarrierSettings email={user?.email} name={name} uid={user?.uid}/> */}
                 <Form>
-                    <h3>New Trip</h3>
+                    <h3>New Offer</h3>
                     <Form.Group className="mb-3" controlId="formGridAddress1">
                         <Form.Label>Truck:</Form.Label>
 						<Form.Select onChange={(e) => setTruckId(e.target.value)}>
