@@ -8,6 +8,8 @@ import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import CarrierHeader from "./../Carrier/CarrierHeader";
 import logo from './../../assets/delivery_light.png';
+import Supply from "./Supply"
+import Button from 'react-bootstrap/Button';
 
 function ViewDemands() {
     const [user, loading, error] = useAuthState(auth);
@@ -16,6 +18,12 @@ function ViewDemands() {
     const history = useHistory();
 
     const [demands, setDemands] = useState([]);
+	const [supplies, setSupplies] = useState([]);
+
+	const [defaultMail, setDefaultMail] = useState("");
+	const [defaultPhone, setDefaultPhone] = useState("");
+
+    const [dbGoods, setDBGoods] = useState([]);
 
 	useEffect(() => {
 		if (loading) {
@@ -42,9 +50,45 @@ function ViewDemands() {
 				const userSnap = await userRef.get();
 				const data = userSnap.data();
 				setName(data.name);
-				setRole(data.role);               
+				setRole(data.role);
+				setDefaultPhone(data.phone);
+				setDefaultMail(data.email);                
 
 				console.log(data.name);
+
+                const goodsRef = db.collection("utilities").doc("goods");
+                const goodsSnap = await goodsRef.get();
+                const goodsData = goodsSnap.data();
+                setDBGoods(goodsData.goods);
+
+                const carriersRef = db.collection("users").where("role", "==", "Carrier");
+                const carriersSnap = await carriersRef.get();
+				const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+				//console.log(allCarriers);     
+
+                let allSupplies = [];
+
+                for (let i = 0; i < allCarriers.length; i++) {
+                    const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies").where("demands", "==", []);
+                    const suppliesCollectionSnap = await suppliesCollectionRef.get();
+                    const allCollectionSupplies = suppliesCollectionSnap.docs.map(supplyDoc => ({
+                        ...supplyDoc.data(),
+                        id: supplyDoc.id,
+                    }));
+
+                    if (allCollectionSupplies.length > 0) {
+                        for (let j = 0; j < allCollectionSupplies.length; j++) {
+                            let newSupply = {
+                                ...allCollectionSupplies[j],
+                                uid: allCarriers[i].uid,
+                            };
+                            allSupplies.push(newSupply);
+                        }
+                    }
+                }
+                
+                console.log(allSupplies);
+                setSupplies(allSupplies);
 
                 const clientsRef = db.collection("users").where("role", "==", "Client");
                 const clientsSnap = await clientsRef.get();
@@ -103,7 +147,7 @@ function ViewDemands() {
 			</Navbar.Collapse>
 			</Container>
 		</Navbar>
-		<div style={{backgroundColor:"#D8EBF3", display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+		{/* <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
 			{
 				demands.map((demand) => (
 					<React.Fragment key={demand.id}>
@@ -128,7 +172,64 @@ function ViewDemands() {
 					</React.Fragment>
 				))
 			}
+		</div> */}
+		<h3 className="halfscreen-header">Offers</h3>
+		<h3 className="halfscreen-header">Demands</h3>
+		<div className="halfscreen">
+			<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+				{
+					supplies.map((supply) => (
+						<React.Fragment key={supply.id}>
+							<Supply
+								id_truck={supply.id_truck}
+								start_date={supply.start_date}
+								start_place={supply.start_place}
+								finish_date={supply.finish_date}
+								finish_place={supply.finish_place}
+								empty_price_per_km={supply.empty_price_per_km}
+								full_price_per_km={supply.full_price_per_km}
+								contact_mail={supply.contact_mail}
+								contact_phone={supply.contact_phone}
+								id={supply.id}
+								uid={supply.uid}
+							>
+							</Supply>
+						</React.Fragment>
+					))
+				}
+			</div>
 		</div>
+		<div className="halfscreen">
+			<div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
+				{
+					demands.map((demand) => (
+						<React.Fragment key={demand.id}>
+							<Demand
+								start_date={demand.start_date}
+								start_max_date={demand.start_max_date}
+								start_place={demand.start_place}
+								finish_date={demand.finish_date}
+								finish_max_date={demand.finish_max_date}
+								finish_place={demand.finish_place}
+								goods={demand.goods}
+								goods_weight={demand.goods_weight}
+								goods_volume={demand.goods_volume}
+								goods_length={demand.goods_length}
+								goods_width={demand.goods_width}
+								goods_height={demand.goods_height}
+								max_budget={demand.max_budget}
+								contact_mail={demand.contact_mail}
+								contact_phone={demand.contact_phone}
+							>
+							</Demand>
+						</React.Fragment>
+					))
+				}
+			</div>
+		</div>
+		<Button variant="primary" style={{margin: '0 auto', display: 'block'}}>
+			Generate Contract
+		</Button>
 	</div>
   );
 }

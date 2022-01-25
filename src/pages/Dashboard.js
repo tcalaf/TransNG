@@ -5,7 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import "./Dashboard.css";
-import { auth, db, logout } from "../firebase";
+import { auth, logout, fetchUser, fetchCarriers, fetchSupplies, fetchTruck, fetchDemand } from "../firebase";
 import logo from './../assets/delivery_light.png';
 import CarrierHeader from "./Carrier/CarrierHeader";
 import ClientHeader from "./Client/ClientHeader";
@@ -24,17 +24,15 @@ function Dashboard() {
 	const [mapData, setMapData] = useState([]);
 	const history = useHistory();
 
-	const deleteOldSupplies = (supplyDoc) => {
-		const data = supplyDoc.data();
-		return Date.parse(data.finish_date) >= Date.now() ? true : false;
+	const deleteOldSupplies = (supply) => {
+		return Date.parse(supply.finish_date) >= Date.now() ? true : false;
 	}
 
-	const deleteUnavailableSupplies = (supplyDoc) => {
-		if (deleteOldSupplies(supplyDoc) === false) return false;
-		const data = supplyDoc.data();
-		if (Date.parse(data.start_date) < Date.now()) return true;
+	const deleteUnavailableSupplies = (supply) => {
+		if (deleteOldSupplies(supply) === false) return false;
+		if (Date.parse(supply.start_date) < Date.now()) return true;
 		else {
-			const demands = data.demands;
+			const demands = supply.demands;
 			for (let i = 0; i < demands.length; i++) {
 				if (demands[i].demand_uid === user.uid) {
 					return true;
@@ -44,70 +42,60 @@ function Dashboard() {
 		}
 	}
 
-	const fetchMapDataForSupply = async (supply, supplyUID) => {
-		const truckRef = db.collection("users").doc(supplyUID).collection("trucks").doc(supply.id_truck);
-		const truckSnap = await truckRef.get();
-		const truckData = truckSnap.data();
-		console.log(truckData);
+	const createMapDataObjectForSupply = async (supply, supplyUID) => {
+		const truck = await fetchTruck(supplyUID, supply.id_truck);
+		console.log(truck);
 
-		let demands = [];
-		const demandsData = supply.demands;
-		for (let j = 0; j < demandsData.length; j++) {
-			const demandRef = db.collection("users").doc(demandsData[j].demand_uid).collection("demands").doc(demandsData[j].demand_id);
-			const demandSnap = await demandRef.get();
-			const demandData = demandSnap.data();
-			demands.push(demandData);
-		}
+		const demands = await fetchDemand(supply.demands);
 		console.log(demands);
 		
-		const obj = {
+		const mapDataObj = {
 			supply: supply,
-			truck: truckData,
+			truck: truck,
 			demands: demands
 		}
 
-		return obj;
+		return mapDataObj;
 	}
 
-	const fetchMapDataCarrier = async () => {
+	const getMapDataCarrier = async () => {
 		console.log("Fetching Carrier map data");
 
-		const suppliesRef = db.collection("users").doc(user?.uid).collection("supplies");
-		const suppliesSnap = await suppliesRef.get();
-		const allSupplies = suppliesSnap.docs.filter(deleteOldSupplies).map(supplyDoc => ({
-			...supplyDoc.data(),
-			id: supplyDoc.id,
-		}));
-		console.log(allSupplies);
+		let supplies = await fetchSupplies(carrier.uid);
+		console.log(supplies);
+
+		supplies = supplies.filter(deleteOldSupplies);
+		console.log(supplies);		
 
 		let userMapData = [];
-		for (let i = 0; i < allSupplies.length; i++) {
-			userMapData.push(await fetchMapDataForSupply(allSupplies[i], user?.uid));
+		for (let i = 0; i < supplies.length; i++) {
+			const supply = supplies[i];
+			userMapData.push(await createMapDataObjectForSupply(supply, user?.uid));
 		}
 
 		console.log("****map data", userMapData);
 		setMapData(userMapData);
 	}
 
-	const fetchMapDataClient = async () => {
+	const getMapDataClient = async () => {
 		console.log("Fetching Client map data");
 
-		const carriersRef = db.collection("users").where("role", "==", "Carrier");
-		const carriersSnap = await carriersRef.get();
-		const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+		const carriers = await fetchCarriers();
+		console.log(carriers);
 
 		let userMapData = [];
-		for (let i = 0; i < allCarriers.length; i++) {
-			const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
-			const suppliesCollectionSnap = await suppliesCollectionRef.get();
-			const allSupplies = suppliesCollectionSnap.docs.filter(deleteUnavailableSupplies).map(supplyDoc => ({
-				...supplyDoc.data(),
-				id: supplyDoc.id,
-			}));
-			console.log(allSupplies);
+		for (let i = 0; i < carriers.length; i++) {
+			const carrier = carriers[i];
 
-			for (let i = 0; i < allSupplies.length; i++) {
-				userMapData.push(await fetchMapDataForSupply(allSupplies[i], allCarriers[i].uid));
+			let supplies = await fetchSupplies(carrier.uid);
+			console.log(supplies);
+
+			supplies = supplies.filter(deleteUnavailableSupplies);
+			console.log(supplies);
+
+			for (let j = 0; j < supplies.length; j++) {
+				const supply = supplies[j];
+				userMapData.push(await createMapDataObjectForSupply(supply, carrier.uid));
 			}
 
 			console.log("****map data", userMapData);
@@ -115,15 +103,13 @@ function Dashboard() {
 		}
 	}
 
-	const fetchUserData = async () => {
+	const getUserData = async () => {
 		console.log("Fetching user data");
-		const userRef = db.collection("users").doc(user?.uid);
-		const userSnap = await userRef.get();
-		const data = userSnap.data();
+		const data = await fetchUser(user?.uid);
+		console.log(data);
 		setName(data.name);
 		setRole(data.role);
 		setPhone(data.phone);
-		console.log(data);
 	}
 
 
@@ -160,8 +146,8 @@ function Dashboard() {
 			if (!user)
 				return;
 			try {
-				fetchUserData();
-				role === "Carrier" ? fetchMapDataCarrier() : fetchMapDataClient();
+				getUserData();
+				role === "Carrier" ? getMapDataCarrier() : getMapDataClient();
 			} catch (err) {
 				console.error(err);
 			}			

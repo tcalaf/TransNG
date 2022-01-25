@@ -7,7 +7,7 @@ const Truck=(props)=>{
     return(
         <React.Fragment>
             <>
-                <Card style={{ width: '18rem' }}>
+                <Card style={{ width: '18rem', margin: '1rem' }}>
                 <Card.Body>
                     <Card.Title>{props.model}</Card.Title>
                     <Card.Text>{props.licence_plate}</Card.Text>

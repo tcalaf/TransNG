@@ -14,7 +14,6 @@ const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 export const addressesToCoordinates = async (addresses) => {
-  console.log(addresses);
   const coordinates = [];
   for (const addr of addresses) {
     const results = await locator.addressToLocations(
@@ -76,7 +75,25 @@ export const newTruckGraphic = (coords, color, attributes = {}) => {
         ]
       })
     })
-  }
+}
+
+export const getTrucksGraphics = (data, routeGraphics) => {
+	const trucks = [];
+  const now = Date.now();
+
+	for (let i = 0; i < data.length; i++) {
+    const route = routeGraphics[i];
+    const elapsedTimeRatio = (now - route.attributes.StartTime) / (route.attributes.TotalTime * 60000);
+    const pos = (route.attributes.StartTime > now) ? 0 : Math.min(Math.floor((route.geometry.paths[0].length-1) * elapsedTimeRatio), route.geometry.paths[0].length-1);
+		
+    trucks.push(newTruckGraphic(
+			{x: route.geometry.paths[0][pos][0], y: route.geometry.paths[0][pos][1]},
+			(Date.parse(data[i].supply.start_date) < Date.now()) ? "red" : "green",
+		  data[i].supply
+		));
+	}
+	return trucks;
+}
 
 // supply is data from db, demands is array of demands as from db
 export const fetchRouteDetails = async (supply, truck, demands=[]) => {
@@ -159,7 +176,6 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		order_pairs: new FeatureSet({features: order_pairs}),
 		default_date: Date.parse(supply.start_date)
 	};
-  console.log(params);
 	const a = await geoprocessor.execute(fleetRoutingUrl, params);
   console.log("AAAA", a);
   return a;
@@ -183,9 +199,47 @@ export const getContractCost = async (supply, demand) => {
   return d1*supply.empty_price_per_km + d2*supply.full_price_per_km;
 }
 
-export const truckArrivesOnTime = async (supply, truck, demands, newDemand) => {
-  const response = await fetchRouteDetails(supply, truck, demands.concat(newDemand));
-  return response.results[2].value.features[0].attributes.TotalViolationTime === 0;
+export const truckCanAcceptNewDemand = async (supply, truck, demands, newDemand) => {
+  const response = await fetchRouteDetails(
+    {...supply, demands: supply.demands.concat({demand_id: newDemand.id})},
+    truck,
+    demands.concat(newDemand)
+  );
+
+  if (response.results[2].value.features[0].attributes.TotalViolationTime > 0)
+    return false;
+
+  for (let i = 0; i < response.results[1].value.features.length; i += 1) {
+    const f = response.results[1].value.features[i];
+    if (f.attributes.Name == newDemand.start_place+"_demand_"+newDemand.id) {
+      if (f.attributes.RouteName === "Route 1")
+        return true;
+      else
+        return false;
+    }
+  }
+  return false;
+}
+
+export const canGenerateContract = async (supply, truck, demands, newDemand) => {
+  const canAccept = await truckCanAcceptNewDemand(supply, truck, demands, newDemand);
+  if (!canAccept)
+    return {
+      ok: false,
+      cost: null
+    };
+
+  const cost = await getContractCost(supply, newDemand);
+  if (cost > newDemand.max_budget)
+    return {
+      ok: false,
+      cost: null
+    };
+
+  return {
+    ok: true,
+    cost: cost
+  };
 }
 
 const getRandomInt = (max) => {
@@ -209,6 +263,5 @@ export const getRouteLayersFeatures = async (data) => {
     const result = await fetchRouteDetails(data[i].supply, data[i].truck, data[i].demands);
     features = features.concat(getRouteLayerFeatures(result.results[2].value.features));
   }
-  console.log(features)
   return features;
 }

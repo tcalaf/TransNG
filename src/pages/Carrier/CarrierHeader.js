@@ -6,8 +6,8 @@ const CarrierHeader=()=>{
     return(
         <React.Fragment>
         <Nav.Link href="/trucks">Trucks</Nav.Link>
-        <Nav.Link href="/newoffers">New Offers</Nav.Link>
-        <Nav.Link href="/trip/new">New Trip</Nav.Link>
+        <Nav.Link href="/choosedemand">Choose a Demand</Nav.Link>
+        <Nav.Link href="/offer/new">New Offer</Nav.Link>
         <Nav.Link href="/contracts">Contracts</Nav.Link>
         </React.Fragment>
     )
