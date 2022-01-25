@@ -14,7 +14,6 @@ const fleetRoutingUrl = "https://logistics.arcgis.com/arcgis/rest/services/World
 const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
 
 export const addressesToCoordinates = async (addresses) => {
-  console.log(addresses);
   const coordinates = [];
   for (const addr of addresses) {
     const results = await locator.addressToLocations(
@@ -177,7 +176,6 @@ export const fetchRouteDetails = async (supply, truck, demands=[]) => {
 		order_pairs: new FeatureSet({features: order_pairs}),
 		default_date: Date.parse(supply.start_date)
 	};
-  console.log(params);
 	const a = await geoprocessor.execute(fleetRoutingUrl, params);
   console.log("AAAA", a);
   return a;
@@ -201,9 +199,33 @@ export const getContractCost = async (supply, demand) => {
   return d1*supply.empty_price_per_km + d2*supply.full_price_per_km;
 }
 
-export const truckArrivesOnTime = async (supply, truck, demands, newDemand) => {
-  const response = await fetchRouteDetails(supply, truck, demands.concat(newDemand));
-  return response.results[2].value.features[0].attributes.TotalViolationTime === 0;
+export const truckCanAcceptNewDemand = async (supply, truck, demands, newDemand) => {
+  const response = await fetchRouteDetails(
+    {...supply, demands: supply.demands.concat({demand_id: newDemand.id})},
+    truck,
+    demands.concat(newDemand)
+  );
+
+  if (response.results[2].value.features[0].attributes.TotalViolationTime > 0)
+    return false;
+
+  for (let i = 0; i < response.results[1].value.features.length; i += 1) {
+    const f = response.results[1].value.features[i];
+    if (f.attributes.Name == newDemand.start_place+"_demand_"+newDemand.id) {
+      if (f.attributes.RouteName === "Route 1")
+        return true;
+      else
+        return false;
+    }
+  }
+  return false;
+}
+
+export const getNewDemandCost = async (supply, truck, demands, newDemand) => {
+  const canAccept = await truckCanAcceptNewDemand(supply, truck, demands, newDemand);
+  if (!canAccept)
+    return null;
+  return await getContractCost(supply, newDemand);
 }
 
 const getRandomInt = (max) => {

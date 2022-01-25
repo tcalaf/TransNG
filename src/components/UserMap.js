@@ -4,7 +4,7 @@ import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 
-import { getRouteLayersFeatures, getTrucksGraphics, newTruckGraphic } from './utils';
+import { getNewDemandCost, getRouteLayersFeatures, getTrucksGraphics, newTruckGraphic, truckCanAcceptNewDemand } from './utils';
 
 /* data (required) structure: [{
     supply: supplyDbObj,
@@ -50,6 +50,8 @@ const UserMap = ({visible, data}) => {
             trucksLayer.current.removeAll();
             trucksLayer.current.addMany(trucks);
         }, 10000);
+
+
         return () => {
             clearInterval(timer);
         }
