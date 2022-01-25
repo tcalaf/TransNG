@@ -221,11 +221,25 @@ export const truckCanAcceptNewDemand = async (supply, truck, demands, newDemand)
   return false;
 }
 
-export const getNewDemandCost = async (supply, truck, demands, newDemand) => {
+export const canGenerateContract = async (supply, truck, demands, newDemand) => {
   const canAccept = await truckCanAcceptNewDemand(supply, truck, demands, newDemand);
   if (!canAccept)
-    return null;
-  return await getContractCost(supply, newDemand);
+    return {
+      ok: false,
+      cost: null
+    };
+
+  const cost = await getContractCost(supply, newDemand);
+  if (cost > newDemand.max_budget)
+    return {
+      ok: false,
+      cost: null
+    };
+
+  return {
+    ok: true,
+    cost: cost
+  };
 }
 
 const getRandomInt = (max) => {
