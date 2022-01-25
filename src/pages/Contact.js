@@ -38,6 +38,7 @@ const Contact=()=>{
 			return history.replace("/");
 		}
 		async function fetchData() {
+			if (!user) return;
 			try {
 				const userRef = await db.collection("users").doc(user?.uid);
 				const userSnap = await userRef.get();

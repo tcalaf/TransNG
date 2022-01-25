@@ -14,6 +14,8 @@ const Demand=(props)=>{
                         <ListGroupItem>Payment Deadline: {props.payment_ddl}</ListGroupItem>
                         <ListGroupItem>Demand ID: {props.demand_id}</ListGroupItem>
                         <ListGroupItem>Supply ID: {props.supply_id}</ListGroupItem>
+                        <ListGroupItem>Demand UID: {props.demand_uid}</ListGroupItem>
+                        <ListGroupItem>Supply UID: {props.supply_uid}</ListGroupItem>
                     </ListGroup>
                 </Card>
             </>

@@ -20,8 +20,112 @@ function Dashboard() {
 	const [user, loading, error] = useAuthState(auth);
 	const [name, setName] = useState("");
 	const [role, setRole] = useState("");
+	const [phone, setPhone] = useState("");
 	const [mapData, setMapData] = useState([]);
 	const history = useHistory();
+
+	const deleteOldSupplies = (supplyDoc) => {
+		const data = supplyDoc.data();
+		return Date.parse(data.finish_date) >= Date.now() ? true : false;
+	}
+
+	const deleteUnavailableSupplies = (supplyDoc) => {
+		if (deleteOldSupplies(supplyDoc) === false) return false;
+		const data = supplyDoc.data();
+		if (Date.parse(data.start_date) < Date.now()) return true;
+		else {
+			const demands = data.demands;
+			for (let i = 0; i < demands.length; i++) {
+				if (demands[i].demand_uid === user.uid) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	const fetchMapDataForSupply = async (supply, supplyUID) => {
+		const truckRef = db.collection("users").doc(supplyUID).collection("trucks").doc(supply.id_truck);
+		const truckSnap = await truckRef.get();
+		const truckData = truckSnap.data();
+		console.log(truckData);
+
+		let demands = [];
+		const demandsData = supply.demands;
+		for (let j = 0; j < demandsData.length; j++) {
+			const demandRef = db.collection("users").doc(demandsData[j].demand_uid).collection("demands").doc(demandsData[j].demand_id);
+			const demandSnap = await demandRef.get();
+			const demandData = demandSnap.data();
+			demands.push(demandData);
+		}
+		console.log(demands);
+		
+		const obj = {
+			supply: supply,
+			truck: truckData,
+			demands: demands
+		}
+
+		return obj;
+	}
+
+	const fetchMapDataCarrier = async () => {
+		console.log("Fetching Carrier map data");
+
+		const suppliesRef = db.collection("users").doc(user?.uid).collection("supplies");
+		const suppliesSnap = await suppliesRef.get();
+		const allSupplies = suppliesSnap.docs.filter(deleteOldSupplies).map(supplyDoc => ({
+			...supplyDoc.data(),
+			id: supplyDoc.id,
+		}));
+		console.log(allSupplies);
+
+		let userMapData = [];
+		for (let i = 0; i < allSupplies.length; i++) {
+			userMapData.push(await fetchMapDataForSupply(allSupplies[i], user?.uid));
+		}
+
+		console.log("****map data", userMapData);
+		setMapData(userMapData);
+	}
+
+	const fetchMapDataClient = async () => {
+		console.log("Fetching Client map data");
+
+		const carriersRef = db.collection("users").where("role", "==", "Carrier");
+		const carriersSnap = await carriersRef.get();
+		const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+
+		let userMapData = [];
+		for (let i = 0; i < allCarriers.length; i++) {
+			const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
+			const suppliesCollectionSnap = await suppliesCollectionRef.get();
+			const allSupplies = suppliesCollectionSnap.docs.filter(deleteUnavailableSupplies).map(supplyDoc => ({
+				...supplyDoc.data(),
+				id: supplyDoc.id,
+			}));
+			console.log(allSupplies);
+
+			for (let i = 0; i < allSupplies.length; i++) {
+				userMapData.push(await fetchMapDataForSupply(allSupplies[i], allCarriers[i].uid));
+			}
+
+			console.log("****map data", userMapData);
+			setMapData(userMapData);			
+		}
+	}
+
+	const fetchUserData = async () => {
+		console.log("Fetching user data");
+		const userRef = db.collection("users").doc(user?.uid);
+		const userSnap = await userRef.get();
+		const data = userSnap.data();
+		setName(data.name);
+		setRole(data.role);
+		setPhone(data.phone);
+		console.log(data);
+	}
+
 
 	useEffect(() => {
 		console.log("dashboard mount")
@@ -56,58 +160,10 @@ function Dashboard() {
 			if (!user)
 				return;
 			try {
-				const userRef = await db.collection("users").doc(user?.uid);
-				const userSnap = await userRef.get();
-				const data = userSnap.data();
-				setName(data.name);
-				setRole(data.role);
-				console.log(data.name);
-
-				const suppliesRef = db.collection("users").doc(user?.uid).collection("supplies");
-				const suppliesSnap = await suppliesRef.get();
-				const allSupplies = suppliesSnap.docs.map(supplyDoc => ({
-					...supplyDoc.data(),
-					id: supplyDoc.id,
-				}));
-
-				console.log(allSupplies);
-
-				let userMapData = [];
-
-				for (let i = 0; i < allSupplies.length; i++) {
-					const truckRef = db.collection("users").doc(user?.uid).collection("trucks").doc(allSupplies[i].id_truck);
-					const truckSnap = await truckRef.get();
-					const truckData = truckSnap.data();
-					console.log(truckData);
-
-					let demands = [];
-
-					const demandsData = allSupplies[i].demands;
-					console.log(demandsData);
-
-					for (let j = 0; j < demandsData.length; j++) {
-						const demandRef = db.collection("users").doc(demandsData[j].demand_uid).collection("demands").doc(demandsData[j].demand_id);
-						const demandSnap = await demandRef.get();
-						const demandData = demandSnap.data();
-						demands.push(demandData);
-					}
-
-					console.log(demands);
-					
-					userMapData.push({
-						supply: allSupplies[i],
-						truck: truckData,
-						demands: demands
-					});
-
-				}
-				console.log("****map data", userMapData);
-				setMapData(userMapData);
-
-
+				fetchUserData();
+				role === "Carrier" ? fetchMapDataCarrier() : fetchMapDataClient();
 			} catch (err) {
 				console.error(err);
-				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
@@ -145,9 +201,9 @@ function Dashboard() {
 			<div className="column menu">
 				{
 					role === "Client" ? (
-						<ClientSettings value={name}/>
+						<ClientSettings name={name}  phone={phone}  email={user?.email} uid={user?.uid} />
 					) : role === "Carrier" ? (
-						<CarrierSettings email={user?.email} name={name} uid={user?.uid}/>
+						<CarrierSettings email={user?.email} name={name} uid={user?.uid} phone={phone}/>
 					) : (
 						<AdminSettings></AdminSettings>
 					)
