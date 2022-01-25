@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { auth, db, logout } from "./../firebase";
+import { auth, db, fetchContractsCarrier, fetchContractsClient, fetchUser, logout } from "./../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import Contract from "./Contract"
@@ -11,29 +11,32 @@ import ClientHeader from "./Client/ClientHeader";
 import AdminHeader from "./Admin/AdminHeader";
 import logo from './../assets/delivery_light.png';
 
-function ViewDemands() {
+function Contracts() {
     const [user, loading, error] = useAuthState(auth);
     const [name, setName] = useState("");
     const [role, setRole] = useState("");
+	const [contracts, setContracts] = useState([]);
     const history = useHistory();
 
-    const [demands, setDemands] = useState([]);
-    const contracts = [
-        {
-            demand_id: "12rrgdbf8jedTpZ5lPOA",
-            payment_ddl: "1641996086",
-            price: "300",
-            special_instructions: "nimic",
-            supply_id: "WLCFCSBal9e3Vvx4Gelv"
-        },
-        {
-            demand_id: "oUWRMYmK4wu488bFSqvf",
-            payment_ddl: "1641996124",
-            price: "400",
-            special_instructions: "nimic2",
-            supply_id: "WLCFCSBal9e3Vvx4Gelv"
-        }
-    ]
+	const getContractsClient = async () => {
+		console.log("Fetching Client contracts!")
+		const contracts = await fetchContractsClient(user.uid);
+		setContracts(contracts);
+	}
+
+	const getContractsCarrier = async () => {
+		console.log("Fetching Carrier contracts!")
+		const contracts = await fetchContractsCarrier(user.uid);
+		setContracts(contracts);
+	}
+
+	const fetchUserData = async () => {
+		console.log("Fetching user data");
+		const data = await fetchUser(user?.uid);
+		console.log(data);
+		setName(data.name);
+		setRole(data.role);       
+	}
 
 	useEffect(() => {
 		if (loading) {
@@ -53,52 +56,21 @@ function ViewDemands() {
 		if (!user) {
 			return history.replace("/");
 		}
+	}, [user, loading, error]);
+
+	useEffect(() => {
 		async function fetchData() {
+			console.log("uid", user?.uid)
+			if (!user) return;
 			try {
-				const userRef = db.collection("users").doc(user?.uid);
-				const userSnap = await userRef.get();
-				const data = userSnap.data();
-				setName(data.name);
-				setRole(data.role);               
-
-				console.log(data.name);
-
-                const clientsRef = db.collection("users").where("role", "==", "Client");
-                const clientsSnap = await clientsRef.get();
-				const allClients = clientsSnap.docs.map(clientDoc => clientDoc.data());    
-
-                let allDemands = [];
-
-                for (let i = 0; i < allClients.length; i++) {
-                    const demandsCollectionRef = db.collection("users").doc(allClients[i].uid).collection("demands");
-                    const demandsCollectionSnap = await demandsCollectionRef.get();
-                    const allCollectionDemands = demandsCollectionSnap.docs.map(demandDoc => ({
-                        ...demandDoc.data(),
-                        id: demandDoc.id,
-                    }));
-
-                    if (allCollectionDemands.length > 0) {
-                        for (let j = 0; j < allCollectionDemands.length; j++) {
-                            let newDemand = {
-                                ...allCollectionDemands[j],
-                                uid: allClients[i].uid,
-                            };
-                            allDemands.push(newDemand);
-                        }
-                    }
-                }
-                
-                console.log(allDemands);
-                setDemands(allDemands);
-                console.log(contracts)
-
+				fetchUserData();
+				role === "Carrier" ? getContractsCarrier() : getContractsClient();
 			} catch (err) {
 				console.error(err);
-				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
-	}, [user, loading, error]);
+	}, [user?.uid]);
 
   return (
 	<div>
@@ -137,8 +109,10 @@ function ViewDemands() {
 							price={contract.price}
 							special_instructions={contract.special_instructions}
 							payment_ddl={contract.payment_ddl}
-							demand_id={contract.demand_id}
-							supply_id={contract.supply_id}
+							demand_id={contract.demand.demand_id}
+							supply_id={contract.supply.supply_id}
+							demand_uid={contract.demand.demand_uid}
+							supply_uid={contract.supply.supply_uid}
 						>
 						</Contract>
 					</React.Fragment>
@@ -149,4 +123,4 @@ function ViewDemands() {
   );
 }
 
-export default ViewDemands;
+export default Contracts;

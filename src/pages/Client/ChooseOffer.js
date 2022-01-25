@@ -24,120 +24,8 @@ function ChooseOffer() {
 	const [role, setRole] = useState("");
 	const history = useHistory();
 
-    const [startDate, setStartDate] = useState("");
-    const [startMaxDate, setStartMaxDate] = useState("");
-    const [finishDate, setFinishDate] = useState("");
-    const [finishMaxDate, setFinishMaxDate] = useState("");
-    const [startPlace, setStartPlace] = useState("");
-    const [finishPlace, setFinishPlace] = useState("");
-    const [goods, setGoods] = useState("");
-    const [goodsWeight, setGoodsWeight] = useState(-1);
-    const [goodsVolume, setGoodsVolume] = useState(-1);
-    const [goodsLength, setGoodsLength] = useState(-1);
-    const [goodsWidth, setGoodsWidth] = useState(-1);
-    const [goodsHeight, setGoodsHeight] = useState(-1);
-    const [maxBudget, setMaxBudget] = useState(-1);
-    const [contactMail, setContactMail] = useState("");
-    const [contactPhone, setContactPhone] = useState("");
-
-	const [defaultMail, setDefaultMail] = useState("");
-	const [defaultPhone, setDefaultPhone] = useState("");
-
-    const [dbGoods, setDBGoods] = useState([]);
-
-    const [supplies, setSupplies] = useState([]);
-    const [demands, setDemands] = useState([]);
-
-    const onlyDigits = (evt) => {
-        if (evt.which != 8 && evt.which != 46 && evt.which != 0 && evt.which < 48 || evt.which > 57)
-        {
-            evt.preventDefault();
-        }
-    }
-
-    const addDemand = () => {
-		var hasEmptyField = false
-        var emptyFields = "Please enter:\n"
-
-        if (startDate === "") {
-            emptyFields += "- Start Date\n"
-            hasEmptyField = true
-        }
-        if (startMaxDate === "") {
-            emptyFields += "- Start Max Date\n"
-            hasEmptyField = true
-        }
-        if (startPlace === "") {
-			emptyFields += "- Start Place\n"
-            hasEmptyField = true
-		}
-        if (finishDate === "") {
-			emptyFields += "- Finish Date\n"
-            hasEmptyField = true
-		}
-        if (finishMaxDate === "") {
-			emptyFields += "- Finish Max Date\n"
-            hasEmptyField = true
-		}
-        if (finishPlace === "") {
-			emptyFields += "- Finish Place\n"
-            hasEmptyField = true
-		}
-        if (goodsWeight < 0) {
-            emptyFields += "- Goods Weidght\n"
-            hasEmptyField = true
-        }
-        if (goodsVolume < 0) {
-            emptyFields += "- Goods Volume\n"
-            hasEmptyField = true
-        }
-        if (goodsLength < 0) {
-            emptyFields += "- Goods Length\n"
-            hasEmptyField = true
-        }
-        if (goodsWidth < 0) {
-            emptyFields += "- Goods Width\n"
-            hasEmptyField = true
-        }
-        if (goodsHeight < 0) {
-            emptyFields += "- Goods Height\n"
-            hasEmptyField = true
-        }
-        if (maxBudget < 0) {
-            emptyFields += "- Max Budget\n"
-            hasEmptyField = true
-        }
-		if (hasEmptyField) {
-            alert(emptyFields);
-            return;
-        }
-
-        db.collection("users").doc(user.uid).collection("demands").add({
-            start_date: startDate,
-            start_max_date: startMaxDate,
-            start_place: startPlace,
-			finish_date: finishDate,
-            finish_max_date: finishMaxDate,
-			finish_place: finishPlace,
-            goods: (goods === "" ? dbGoods[0] : goods),
-            goods_weight: goodsWeight,
-            goods_volume: goodsVolume,
-            goods_length: goodsLength,
-            goods_width: goodsWidth,
-            goods_height: goodsHeight,
-            max_budget: maxBudget,
-			contact_mail: (contactMail === "" ? defaultMail : contactMail),
-			contact_phone: (contactPhone === "" ? defaultPhone : contactPhone),
-            supply: null,
-        })
-        .then((docRef) => {
-            alert("Demand added with ID: " + docRef.id)
-            console.log("Document written with ID: ", docRef.id);
-        })
-        .catch((error) => {
-            console.error("Error adding document: ", error);
-        });
-    }
+    const [clientDemands, setClientDemands] = useState([]);
+    const [carriersSupplies, setCarriersSupplies] = useState([]);
 
 	useEffect(() => {
 		if (loading) {
@@ -157,87 +45,83 @@ function ChooseOffer() {
 		if (!user) {
 			return history.replace("/");
 		}
+	}, [user, loading, error]);
+
+	const fetchUserData = async () => {
+		console.log("Fetching user data");
+		const userRef = db.collection("users").doc(user?.uid);
+		const userSnap = await userRef.get();
+		const data = userSnap.data();
+		setName(data.name);
+		setRole(data.role);           
+	}
+
+    const fetchDemands = async () => {
+        console.log("Fetching Demands");
+
+        const availableDemands = (demandDoc) => {
+            const data = demandDoc.data();
+            return Date.parse(data.start_date) >= Date.now() ? true : false;        
+        }
+
+        const demandsRef = db.collection("users").doc(user.uid).collection("demands").where("supply", "==", null);
+        const demandsSnap = await demandsRef.get();
+        const allDemands = demandsSnap.docs.filter(availableDemands).map(demandDoc => ({
+            ...demandDoc.data(),
+            id: demandDoc.id,
+        }));
+        setClientDemands(allDemands);
+    }
+
+    const fetchSupplies = async (demand) => {
+		console.log("Fetching Supplies for chosen demand");
+
+        const availableSupplies = (supplyDoc) => {
+            const supply = supplyDoc.data();
+            if (Date.parse(supply.start_date) < Date.parse(demand.start_date) &&
+                Date.parse(supply.finish_date) > Date.parse(demand.finish_date) &&
+                Date.parse(supply.start_date) >= Date.now()) {
+                    return true;
+                }
+            return false;
+        }
+
+		const carriersRef = db.collection("users").where("role", "==", "Carrier");
+		const carriersSnap = await carriersRef.get();
+		const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+
+		for (let i = 0; i < allCarriers.length; i++) {
+			const suppliesRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
+			const suppliesSnap = await suppliesRef.get();
+			const allSupplies = suppliesSnap.docs.filter(availableSupplies).map(supplyDoc => ({
+				...supplyDoc.data(),
+				id: supplyDoc.id,
+			}));
+
+			for (let i = 0; i < allSupplies.length; i++) {
+				userMapData.push(await fetchMapDataForSupply(allSupplies[i], allCarriers[i].uid));
+			}
+
+			console.log("****map data", userMapData);
+			setMapData(userMapData);			
+		}
+
+    }
+
+    useEffect(() => {
 		async function fetchData() {
+			console.log("uid", user?.uid);
+			if (!user) return;
 			try {
-				const userRef = db.collection("users").doc(user?.uid);
-				const userSnap = await userRef.get();
-				const data = userSnap.data();
-				setName(data.name);
-				setRole(data.role);
-				setDefaultPhone(data.phone);
-				setDefaultMail(data.email);                
-
-				console.log(data.name);
-
-                const goodsRef = db.collection("utilities").doc("goods");
-                const goodsSnap = await goodsRef.get();
-                const goodsData = goodsSnap.data();
-                setDBGoods(goodsData.goods);
-
-                const carriersRef = db.collection("users").where("role", "==", "Carrier");
-                const carriersSnap = await carriersRef.get();
-				const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
-				//console.log(allCarriers);     
-
-                let allSupplies = [];
-
-                for (let i = 0; i < allCarriers.length; i++) {
-                    const suppliesCollectionRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies").where("demands", "==", []);
-                    const suppliesCollectionSnap = await suppliesCollectionRef.get();
-                    const allCollectionSupplies = suppliesCollectionSnap.docs.map(supplyDoc => ({
-                        ...supplyDoc.data(),
-                        id: supplyDoc.id,
-                    }));
-
-                    if (allCollectionSupplies.length > 0) {
-                        for (let j = 0; j < allCollectionSupplies.length; j++) {
-                            let newSupply = {
-                                ...allCollectionSupplies[j],
-                                uid: allCarriers[i].uid,
-                            };
-                            allSupplies.push(newSupply);
-                        }
-                    }
-                }
-                
-                console.log(allSupplies);
-                setSupplies(allSupplies);
-
-                const clientsRef = db.collection("users").where("role", "==", "Client");
-                const clientsSnap = await clientsRef.get();
-				const allClients = clientsSnap.docs.map(clientDoc => clientDoc.data());    
-
-                let allDemands = [];
-
-                for (let i = 0; i < allClients.length; i++) {
-                    const demandsCollectionRef = db.collection("users").doc(allClients[i].uid).collection("demands").where("supply", "==", null);
-                    const demandsCollectionSnap = await demandsCollectionRef.get();
-                    const allCollectionDemands = demandsCollectionSnap.docs.map(demandDoc => ({
-                        ...demandDoc.data(),
-                        id: demandDoc.id,
-                    }));
-
-                    if (allCollectionDemands.length > 0) {
-                        for (let j = 0; j < allCollectionDemands.length; j++) {
-                            let newDemand = {
-                                ...allCollectionDemands[j],
-                                uid: allClients[i].uid,
-                            };
-                            allDemands.push(newDemand);
-                        }
-                    }
-                }
-                
-                console.log(allDemands);
-                setDemands(allDemands);
-
+				fetchUserData();
+				fetchDemands();
+                //fetchSupplies(demand);
 			} catch (err) {
 				console.error(err);
-				//alert("An error occured while fetching user data");
 			}			
 		}
 		fetchData();
-	}, [user, loading, error]);
+	}, [user?.uid]);
 
 	return (
 		<div>
