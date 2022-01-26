@@ -62,7 +62,7 @@ function Dashboard() {
 		console.log("Fetching Carrier map data");
 		let userMapData = [];
 
-		let supplies = await fetchSupplies(carrier.uid);
+		let supplies = await fetchSupplies(user?.uid);
 		console.log(supplies);
 
 		supplies = supplies.filter(deleteOldSupplies);
@@ -96,22 +96,11 @@ function Dashboard() {
 			for (let j = 0; j < supplies.length; j++) {
 				const supply = supplies[j];
 				userMapData.push(await createMapDataObjectForSupply(supply, carrier.uid));
-			}
-
-			console.log("****map data", userMapData);
-			setMapData(userMapData);			
+			}			
 		}
+		console.log("****map data", userMapData);
+		setMapData(userMapData);
 	}
-
-	const getUserData = async () => {
-		console.log("Fetching user data");
-		const data = await fetchUser(user?.uid);
-		console.log(data);
-		setName(data.name);
-		setRole(data.role);
-		setPhone(data.phone);
-	}
-
 
 	useEffect(() => {
 		console.log("dashboard mount")
@@ -146,14 +135,21 @@ function Dashboard() {
 			if (!user)
 				return;
 			try {
-				getUserData();
-				role === "Carrier" ? getMapDataCarrier() : getMapDataClient();
+				console.log("Fetching user data");
+				const data = await fetchUser(user?.uid);
+				console.log(data);
+				setName(data.name);
+				setRole(data.role);
+				setPhone(data.phone);
+				console.log(role);
+				if (data.role === "Carrier") getMapDataCarrier();
+				else if (data.role === "Client") getMapDataClient();
 			} catch (err) {
 				console.error(err);
 			}			
 		}
 		fetchData();
-	}, [user?.uid]);
+	}, [user]);
 
 	return (
 		<div>
@@ -191,13 +187,17 @@ function Dashboard() {
 					) : role === "Carrier" ? (
 						<CarrierSettings email={user?.email} name={name} uid={user?.uid} phone={phone}/>
 					) : (
-						<AdminSettings></AdminSettings>
+						<AdminSettings name={name}  phone={phone}  email={user?.email} uid={user?.uid}></AdminSettings>
 					)
 				}
 			</div>
+			{
+			role !== "Admin" 
+			&& 
 			<div className="divmap" style={{backgroundColor:"#ADD8E6"}}>
 				<UserMap visible={user && role !== "" && name !== ""} data={mapData} />
 			</div>
+			}
 		</div>
 	);
 }

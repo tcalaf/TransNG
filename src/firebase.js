@@ -60,6 +60,17 @@ const logout = () => {
 	auth.signOut();
 };
 
+const fetchDemandsSupplyNull = async (uid) => {
+	const demandsRef = db.collection("users").doc(uid).collection("demands").where("supply", "==", null);
+	const demandsSnap = await demandsRef.get();
+	const allDemands = demandsSnap.docs.map(demandDoc => ({
+		...demandDoc.data(),
+		id: demandDoc.id,
+		uid: uid
+	}));
+	return allDemands;
+}
+
 // Returns client's contracts
 const fetchContractsClient = async (uid) => {
 	const contractsRef = db.collection("contracts").where("demand.demand_uid", "==", uid);
@@ -115,6 +126,7 @@ const fetchSupplies = async (uid) => {
 	const allSupplies = suppliesSnap.docs.map(supplyDoc => ({
 		...supplyDoc.data(),
 		id: supplyDoc.id,
+		uid: uid
 	}));
 	return allSupplies;
 }
@@ -122,6 +134,14 @@ const fetchSupplies = async (uid) => {
 // Returns all carriers
 const fetchCarriers = async () => {
 	const carriersRef = db.collection("users").where("role", "==", "Carrier");
+	const carriersSnap = await carriersRef.get();
+	const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+	return allCarriers;
+}
+
+// Returns all carriers
+const fetchClients = async () => {
+	const carriersRef = db.collection("users").where("role", "==", "Client");
 	const carriersSnap = await carriersRef.get();
 	const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
 	return allCarriers;
@@ -144,10 +164,12 @@ export {
 	logout,
 	fetchUser,
 	fetchCarriers,
+	fetchClients,
 	fetchSupplies,
 	fetchTruck,
 	fetchDemand,
 	fetchDemandsforSupply,
 	fetchContractsClient,
 	fetchContractsCarrier,
+	fetchDemandsSupplyNull,
 };

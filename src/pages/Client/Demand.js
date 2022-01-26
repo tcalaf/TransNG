@@ -5,6 +5,9 @@ import Card from 'react-bootstrap/Card';
 import { Button } from 'react-bootstrap';
 
 const Demand=(props)=>{
+    const selectDemand = () => {
+
+    }
 
     return(
         <React.Fragment>
@@ -14,6 +17,7 @@ const Demand=(props)=>{
                         <Card.Title>{props.start_place} → {props.finish_place}</Card.Title>
                     </Card.Body>
                     <ListGroup className="list-group-flush">
+                        <ListGroupItem>ID: {props.id}</ListGroupItem>
                         <ListGroupItem>Start Date: {props.start_date}</ListGroupItem>
                         <ListGroupItem>Start Max Date: {props.start_max_date}</ListGroupItem>
                         <ListGroupItem>Finish Date: {props.finish_date}</ListGroupItem>
@@ -26,9 +30,10 @@ const Demand=(props)=>{
                         <ListGroupItem>Goods Height: {props.goods_height}m</ListGroupItem>
                         <ListGroupItem>Budget: {props.max_budget}</ListGroupItem>
                         <ListGroupItem>Contact Mail: {props.contact_mail}</ListGroupItem>
-                        <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
+                        <ListGroupItem>Contact Phone: {props.contact_phone}</ListGroupItem>
+                        {props.cost !== null && <ListGroupItem>Cost: {props.cost}</ListGroupItem>}
                     </ListGroup>
-                    <Button variant="primary" onClick={() => props.onClick()}>Select</Button>
+                    <Button variant="primary" onClick={props.onSelect}>Select</Button>
                 </Card>
             </>
         </React.Fragment>

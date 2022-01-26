@@ -30,14 +30,6 @@ function Contracts() {
 		setContracts(contracts);
 	}
 
-	const fetchUserData = async () => {
-		console.log("Fetching user data");
-		const data = await fetchUser(user?.uid);
-		console.log(data);
-		setName(data.name);
-		setRole(data.role);       
-	}
-
 	useEffect(() => {
 		if (loading) {
 			return (
@@ -63,14 +55,19 @@ function Contracts() {
 			console.log("uid", user?.uid)
 			if (!user) return;
 			try {
-				fetchUserData();
-				role === "Carrier" ? getContractsCarrier() : getContractsClient();
+				console.log("Fetching user data");
+				const data = await fetchUser(user?.uid);
+				console.log(data);
+				setName(data.name);
+				setRole(data.role);  
+				if (data.role === "Carrier") getContractsCarrier();
+				else if (data.role === "Client") getContractsClient();
 			} catch (err) {
 				console.error(err);
 			}			
 		}
 		fetchData();
-	}, [user?.uid]);
+	}, [user]);
 
   return (
 	<div>
