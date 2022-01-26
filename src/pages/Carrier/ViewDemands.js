@@ -12,6 +12,7 @@ import Supply from "./Supply"
 import Button from 'react-bootstrap/Button';
 import { canGenerateContract } from '../../components/utils';
 import Form from 'react-bootstrap/Form';
+import firebase from "firebase/compat/app"
 
 function ViewDemands() {
     const [user, loading, error] = useAuthState(auth);
@@ -103,8 +104,8 @@ function ViewDemands() {
     const availableArcgis = async (demand) => {
         const truck = await fetchTruck(supplySelected.uid, supplySelected.id_truck);
         const demands = await fetchDemandsforSupply(supplySelected.demands)
-        const cost = await canGenerateContract(supplySelected, truck, demands, demand);
-	   //const cost = Math.floor(Math.random() * 10);
+        //const cost = await canGenerateContract(supplySelected, truck, demands, demand);
+	   const cost = Math.floor(Math.random() * 10);
 
         const costObj = {
             cost: cost
@@ -131,15 +132,19 @@ function ViewDemands() {
 		fetchData();
 	}, [user]);
 
-    if (supplySelected !== null && unsortedDemands === null) {
-        const clientsDemandsFiltered = clientsDemands.filter(availableTime);
-        Promise.all(clientsDemandsFiltered.map(availableArcgis)).then((clientsDemandsMapped) => {
-			const clientsDemandsMappedFiltered = clientsDemandsMapped.filter((demand) => demand.cost === null ? false : true);
-			console.log(clientsDemandsMappedFiltered );
-			setUnsortedDemands([...clientsDemandsMappedFiltered]);
-            setSortedDemands([...clientsDemandsMappedFiltered].sort(sortDesc));
-        });
-    }
+    useEffect(() => {
+        console.log("Changed chosen supply")
+        async function fetchData() {
+            const clientsDemandsFiltered = clientsDemands.filter(availableTime);
+            Promise.all(clientsDemandsFiltered.map(availableArcgis)).then((clientsDemandsMapped) => {
+                const clientsDemandsMappedFiltered = clientsDemandsMapped.filter((demand) => demand.cost === null ? false : true);
+                console.log(clientsDemandsMappedFiltered );
+                setUnsortedDemands([...clientsDemandsMappedFiltered]);
+                setSortedDemands([...clientsDemandsMappedFiltered].sort(sortDesc));
+            });
+        }
+        fetchData();
+    }, [supplySelected]);
 
     const generateContract = () => {
 		if (supplySelected === null) {
@@ -166,6 +171,20 @@ function ViewDemands() {
         .then((docRef) => {
             alert("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
             console.log("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
+            const supplyRef = db.collection("users").doc(supplySelected.uid).collection("supplies").doc(supplySelected.id);
+            const demandRef = db.collection("users").doc(demandSelected.uid).collection("demands").doc(demandSelected.id);
+            supplyRef.update({
+                demands: firebase.firestore.FieldValue.arrayUnion({
+                    demand_id: demandSelected.id,
+                    demand_uid: demandSelected.uid                    
+                })
+            });
+            demandRef.update({
+                supply: {
+                    supply_id: supplySelected.id,
+                    supply_uid: supplySelected.uid
+                }
+            });
         })
         .catch((error) => {
             console.error("Error adding document: ", error);

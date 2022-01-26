@@ -30,7 +30,7 @@ function Dashboard() {
 
 	const deleteUnavailableSupplies = (supply) => {
 		if (deleteOldSupplies(supply) === false) return false;
-		if (Date.parse(supply.start_date) < Date.now()) return true;
+		if (Date.parse(supply.start_date) > Date.now()) return true;
 		else {
 			const demands = supply.demands;
 			for (let i = 0; i < demands.length; i++) {

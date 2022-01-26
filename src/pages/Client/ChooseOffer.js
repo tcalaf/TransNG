@@ -18,6 +18,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import "react-datepicker/dist/react-datepicker.css";
 import { canGenerateContract } from "../../components/utils";
+import firebase from "firebase/compat/app"
 
 function ChooseOffer() {
 	const [user, loading, error] = useAuthState(auth);
@@ -100,7 +101,7 @@ function ChooseOffer() {
     }
 
     const availableTime = (supply) => {
-        if (Date.parse(supply.start_date) > Date.parse(demandSelected.start_date) || Date.parse(supply.finish_date) < Date.parse(demandSelected.finish_date)) {
+        if (Date.parse(supply.start_date) > Date.parse(demandSelected.start_max_date) || Date.parse(supply.finish_date) < Date.parse(demandSelected.finish_date)) {
             return false;
         }
         
@@ -110,8 +111,8 @@ function ChooseOffer() {
     const availableArcgis = async (supply) => {
         const truck = await fetchTruck(supply.uid, supply.id_truck);
         const demands = await fetchDemandsforSupply(supply.demands)
-        const cost = await canGenerateContract(supply, truck, demands, demandSelected);
-        //const cost = Math.floor(Math.random() * 10);
+        //const cost = await canGenerateContract(supply, truck, demands, demandSelected);
+        const cost = Math.floor(Math.random() * 10)*100 + 50;
 
         const costObj = {
             cost: cost
@@ -138,15 +139,19 @@ function ChooseOffer() {
 		fetchData();
 	}, [user]);
 
-    if (demandSelected !== null && unsortedSupplies === null) {
-        const carriersSuppliesFiltered = carriersSupplies.filter(availableTime);
-        Promise.all(carriersSuppliesFiltered.map(availableArcgis)).then((carriersSuppliesMapped) => {
-            const carriersSuppliesMappedFiltered = carriersSuppliesMapped.filter((supply) => supply.cost === null ? false : true);
-            console.log(carriersSuppliesMappedFiltered);
-            setUnsortedSupplies([...carriersSuppliesMappedFiltered]);
-            setSortedSupplies([...carriersSuppliesMappedFiltered].sort(sortAsc));
-        });
-    }
+    useEffect(() => {
+        console.log("Changed chosen demand")
+        async function fetchData() {
+            const carriersSuppliesFiltered = carriersSupplies.filter(availableTime);
+            Promise.all(carriersSuppliesFiltered.map(availableArcgis)).then((carriersSuppliesMapped) => {
+                const carriersSuppliesMappedFiltered = carriersSuppliesMapped.filter((supply) => supply.cost === null ? false : true);
+                console.log(carriersSuppliesMappedFiltered);
+                setUnsortedSupplies([...carriersSuppliesMappedFiltered]);
+                setSortedSupplies([...carriersSuppliesMappedFiltered].sort(sortAsc));
+            });
+        }
+        fetchData();
+    }, [demandSelected]);
 
     const generateContract = () => {
         if (demandSelected === null) {
@@ -173,6 +178,20 @@ function ChooseOffer() {
         .then((docRef) => {
             alert("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
             console.log("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
+            const supplyRef = db.collection("users").doc(supplySelected.uid).collection("supplies").doc(supplySelected.id);
+            const demandRef = db.collection("users").doc(demandSelected.uid).collection("demands").doc(demandSelected.id);
+            supplyRef.update({
+                demands: firebase.firestore.FieldValue.arrayUnion({
+                    demand_id: demandSelected.id,
+                    demand_uid: demandSelected.uid                    
+                })
+            });
+            demandRef.update({
+                supply: {
+                    supply_id: supplySelected.id,
+                    supply_uid: supplySelected.uid
+                }
+            });
         })
         .catch((error) => {
             console.error("Error adding document: ", error);
