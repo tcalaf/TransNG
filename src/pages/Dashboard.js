@@ -62,7 +62,7 @@ function Dashboard() {
 		console.log("Fetching Carrier map data");
 		let userMapData = [];
 
-		let supplies = await fetchSupplies(carrier.uid);
+		let supplies = await fetchSupplies(user?.uid);
 		console.log(supplies);
 
 		supplies = supplies.filter(deleteOldSupplies);
@@ -96,11 +96,10 @@ function Dashboard() {
 			for (let j = 0; j < supplies.length; j++) {
 				const supply = supplies[j];
 				userMapData.push(await createMapDataObjectForSupply(supply, carrier.uid));
-			}
-
-			console.log("****map data", userMapData);
-			setMapData(userMapData);			
+			}			
 		}
+		console.log("****map data", userMapData);
+		setMapData(userMapData);
 	}
 
 	const getUserData = async () => {

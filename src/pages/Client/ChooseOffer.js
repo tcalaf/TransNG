@@ -5,7 +5,7 @@ import Nav from 'react-bootstrap/Nav';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useHistory } from "react-router";
 import "./../Dashboard.css";
-import { auth, db, logout } from "./../../firebase";
+import { auth, db, fetchCarriers, fetchDemandsforSupply, fetchDemandsSupplyNull, fetchSupplies, fetchTruck, fetchUser, logout } from "./../../firebase";
 import logo from './../../assets/delivery_light.png';
 import ClientHeader from "./ClientHeader";
 import Supply from "./../Carrier/Supply"
@@ -17,6 +17,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import "react-datepicker/dist/react-datepicker.css";
+import { canGenerateContract } from "../../components/utils";
 
 function ChooseOffer() {
 	const [user, loading, error] = useAuthState(auth);
@@ -26,6 +27,9 @@ function ChooseOffer() {
 
     const [clientDemands, setClientDemands] = useState([]);
     const [carriersSupplies, setCarriersSupplies] = useState([]);
+    const [carriersSupplieswithCost, setCarriersSupplieswithCost] = useState(null);
+    const [demandSelected, setDemandSelected] = useState(null);
+	const [supplySelected, setSupplySelected] = useState(null);
 
 	useEffect(() => {
 		if (loading) {
@@ -49,63 +53,69 @@ function ChooseOffer() {
 
 	const fetchUserData = async () => {
 		console.log("Fetching user data");
-		const userRef = db.collection("users").doc(user?.uid);
-		const userSnap = await userRef.get();
-		const data = userSnap.data();
+		const data = await fetchUser(user?.uid);
+		console.log(data);
 		setName(data.name);
-		setRole(data.role);           
+		setRole(data.role);        
 	}
 
-    const fetchDemands = async () => {
-        console.log("Fetching Demands");
-
-        const availableDemands = (demandDoc) => {
-            const data = demandDoc.data();
-            return Date.parse(data.start_date) >= Date.now() ? true : false;        
-        }
-
-        const demandsRef = db.collection("users").doc(user.uid).collection("demands").where("supply", "==", null);
-        const demandsSnap = await demandsRef.get();
-        const allDemands = demandsSnap.docs.filter(availableDemands).map(demandDoc => ({
-            ...demandDoc.data(),
-            id: demandDoc.id,
-        }));
-        setClientDemands(allDemands);
+    const availableStartDate = (doc) => {
+        return Date.parse(doc.start_date) >= Date.now() ? true : false;  
     }
 
-    const fetchSupplies = async (demand) => {
-		console.log("Fetching Supplies for chosen demand");
+    const getDemands = async () => {
+        console.log("Fetching Demands");
 
-        const availableSupplies = (supplyDoc) => {
-            const supply = supplyDoc.data();
-            if (Date.parse(supply.start_date) < Date.parse(demand.start_date) &&
-                Date.parse(supply.finish_date) > Date.parse(demand.finish_date) &&
-                Date.parse(supply.start_date) >= Date.now()) {
-                    return true;
-                }
+        let demands = await fetchDemandsSupplyNull(user.uid);
+        console.log(demands);
+
+        demands = demands.filter(availableStartDate);
+        console.log(demands);
+
+        setClientDemands(demands);
+    }
+
+    const getSupplies = async () => {
+		console.log("Fetching Supplies");
+
+        const carriers = await fetchCarriers();
+
+        let allSupplies = [];
+		for (let i = 0; i < carriers.length; i++) {
+            const carrier = carriers[i];
+
+            let supplies = await fetchSupplies(carrier.uid);
+            console.log(supplies);
+
+            supplies = supplies.filter(availableStartDate);
+            console.log(supplies);
+
+            allSupplies = allSupplies.concat(supplies);
+		}
+        setCarriersSupplies(allSupplies);
+    }
+
+    const availableTime = (supply) => {
+        if (Date.parse(supply.start_date) > Date.parse(demandSelected.start_date) || Date.parse(supply.finish_date) < Date.parse(demandSelected.finish_date)) {
             return false;
         }
 
-		const carriersRef = db.collection("users").where("role", "==", "Carrier");
-		const carriersSnap = await carriersRef.get();
-		const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+        return true;
+    }
 
-		for (let i = 0; i < allCarriers.length; i++) {
-			const suppliesRef = db.collection("users").doc(allCarriers[i].uid).collection("supplies");
-			const suppliesSnap = await suppliesRef.get();
-			const allSupplies = suppliesSnap.docs.filter(availableSupplies).map(supplyDoc => ({
-				...supplyDoc.data(),
-				id: supplyDoc.id,
-			}));
+    const availableArcgis = async (supply) => {
+        const truck = await fetchTruck(supply.uid, supply.id_truck);
+        const demands = await fetchDemandsforSupply(supply.demands)
+        const cost = await canGenerateContract(supply, truck, demands, demandSelected);
 
-			for (let i = 0; i < allSupplies.length; i++) {
-				userMapData.push(await fetchMapDataForSupply(allSupplies[i], allCarriers[i].uid));
-			}
-
-			console.log("****map data", userMapData);
-			setMapData(userMapData);			
-		}
-
+        const costObj = {
+            cost: cost
+        }
+        const ret = {
+            ...supply,
+            ...costObj
+        }
+        return ret;
     }
 
     useEffect(() => {
@@ -114,14 +124,53 @@ function ChooseOffer() {
 			if (!user) return;
 			try {
 				fetchUserData();
-				fetchDemands();
-                //fetchSupplies(demand);
+				getDemands();
+                getSupplies();
 			} catch (err) {
 				console.error(err);
 			}			
 		}
 		fetchData();
 	}, [user?.uid]);
+
+    if (demandSelected !== null && carriersSupplieswithCost === null) {
+        const carriersSuppliesFiltered = carriersSupplies.filter(availableTime);
+        Promise.all(carriersSuppliesFiltered.map(availableArcgis)).then((carriersSuppliesMapped) => {
+            setCarriersSupplieswithCost(carriersSuppliesMapped)
+            console.log(carriersSuppliesMapped);
+        });
+    }
+
+    const generateContract = () => {
+        if (demandSelected === null) {
+            alert("Please choose a demand!")
+            return;
+        }
+        if (supplySelected === null) {
+            alert("Please choose a supply!")
+            return;
+        }
+        db.collection("contracts").add({
+            demand: {
+                demand_id: demandSelected.id,
+                demand_uid: demandSelected.uid
+            },
+            supply: {
+                supply_id: supplySelected.id,
+                supply_uid: supplySelected.uid
+            },
+            price: supplySelected.cost,
+            payment_ddl: "To be specified",
+            special_instructions: "To be specified"
+        })
+        .then((docRef) => {
+            alert("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
+            console.log("Contract: " + docRef.id + " generated between demand: " + demandSelected.id + " and supply: " + supplySelected.id);
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+        });
+    }
 
 	return (
 		<div>
@@ -149,7 +198,7 @@ function ChooseOffer() {
             <div className="halfscreen">
                 <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
                     {
-                        demands.map((demand) => (
+                        clientDemands.map((demand) => (
                             <React.Fragment key={demand.id}>
                                 <Demand
                                     start_date={demand.start_date}
@@ -167,6 +216,9 @@ function ChooseOffer() {
                                     max_budget={demand.max_budget}
                                     contact_mail={demand.contact_mail}
                                     contact_phone={demand.contact_phone}
+                                    id={demand.id}
+                                    selected={demandSelected === demand ? true : false}
+                                    onSelect={() => {setDemandSelected(demand); console.log(demandSelected); console.log(carriersSupplies)}}
                                 >
                                 </Demand>
                             </React.Fragment>
@@ -177,28 +229,36 @@ function ChooseOffer() {
             <div className="halfscreen">
                 <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
                     {
-                        supplies.map((supply) => (
-                            <React.Fragment key={supply.id}>
-                                <Supply
-                                    id_truck={supply.id_truck}
-                                    start_date={supply.start_date}
-                                    start_place={supply.start_place}
-                                    finish_date={supply.finish_date}
-                                    finish_place={supply.finish_place}
-                                    empty_price_per_km={supply.empty_price_per_km}
-                                    full_price_per_km={supply.full_price_per_km}
-                                    contact_mail={supply.contact_mail}
-                                    contact_phone={supply.contact_phone}
-                                    id={supply.id}
-                                    uid={supply.uid}
-                                >
-                                </Supply>
-                            </React.Fragment>
+                        demandSelected !== null &&
+                        carriersSupplieswithCost !== null &&
+                        carriersSupplieswithCost.map((supply) => (
+                            supply.cost === null ? (
+                                (null)
+                            ) : (
+                                <React.Fragment key={supply.id}>
+                                    <Supply
+                                        id_truck={supply.id_truck}
+                                        id={supply.id}
+                                        start_date={supply.start_date}
+                                        start_place={supply.start_place}
+                                        finish_date={supply.finish_date}
+                                        finish_place={supply.finish_place}
+                                        empty_price_per_km={supply.empty_price_per_km}
+                                        full_price_per_km={supply.full_price_per_km}
+                                        contact_mail={supply.contact_mail}
+                                        contact_phone={supply.contact_phone}
+                                        selected={supplySelected === supply ? true : false}
+                                        onSelect={() => setSupplySelected(supply)}
+                                        cost = {supply.cost}
+                                    >
+                                    </Supply>
+                                </React.Fragment>
+                            )
                         ))
                     }
                 </div>
             </div>
-            <Button variant="primary" style={{margin: '0 auto', display: 'block'}}>
+            <Button variant="primary" onClick={(e) => {e.preventDefault(); generateContract();}} style={{margin: '0 auto', display: 'block'}}>
                 Generate Contract
             </Button>
 		</div>
