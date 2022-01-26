@@ -64,8 +64,7 @@ function ChooseOffer() {
 	}
 
     const availableStartDate = (doc) => {
-        //return Date.parse(doc.start_date) >= Date.now() ? true : false;  
-        return true;
+        return Date.parse(doc.start_date) >= Date.now() ? true : false;  
     }
 
     const getDemands = async () => {
@@ -101,20 +100,18 @@ function ChooseOffer() {
     }
 
     const availableTime = (supply) => {
-        /*
         if (Date.parse(supply.start_date) > Date.parse(demandSelected.start_date) || Date.parse(supply.finish_date) < Date.parse(demandSelected.finish_date)) {
             return false;
         }
-        */
-
+        
         return true;
     }
 
     const availableArcgis = async (supply) => {
         const truck = await fetchTruck(supply.uid, supply.id_truck);
         const demands = await fetchDemandsforSupply(supply.demands)
-        //const cost = await canGenerateContract(supply, truck, demands, demandSelected);
-        const cost = Math.floor(Math.random() * 10);
+        const cost = await canGenerateContract(supply, truck, demands, demandSelected);
+        //const cost = Math.floor(Math.random() * 10);
 
         const costObj = {
             cost: cost
