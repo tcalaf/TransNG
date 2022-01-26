@@ -5,9 +5,6 @@ import Card from 'react-bootstrap/Card';
 import { Button } from 'react-bootstrap';
 
 const Demand=(props)=>{
-    const selectDemand = () => {
-
-    }
 
     return(
         <React.Fragment>
