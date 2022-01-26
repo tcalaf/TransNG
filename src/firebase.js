@@ -139,6 +139,14 @@ const fetchCarriers = async () => {
 	return allCarriers;
 }
 
+// Returns all carriers
+const fetchClients = async () => {
+	const carriersRef = db.collection("users").where("role", "==", "Client");
+	const carriersSnap = await carriersRef.get();
+	const allCarriers = carriersSnap.docs.map(carrierDoc => carrierDoc.data());
+	return allCarriers;
+}
+
 // Returns user
 const fetchUser = async (uid) => {
     const userRef = db.collection("users").doc(uid);
@@ -156,6 +164,7 @@ export {
 	logout,
 	fetchUser,
 	fetchCarriers,
+	fetchClients,
 	fetchSupplies,
 	fetchTruck,
 	fetchDemand,

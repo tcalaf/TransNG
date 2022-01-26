@@ -27,9 +27,12 @@ function ChooseOffer() {
 
     const [clientDemands, setClientDemands] = useState([]);
     const [carriersSupplies, setCarriersSupplies] = useState([]);
-    const [carriersSupplieswithCost, setCarriersSupplieswithCost] = useState(null);
     const [demandSelected, setDemandSelected] = useState(null);
 	const [supplySelected, setSupplySelected] = useState(null);
+    const [sortedSupplies, setSortedSupplies] = useState(null);
+    const [unsortedSupplies, setUnsortedSupplies] = useState(null);
+
+    const [sorted, setSorted] = useState(false);
 
 	useEffect(() => {
 		if (loading) {
@@ -51,6 +54,7 @@ function ChooseOffer() {
 		}
 	}, [user, loading, error]);
 
+
 	const fetchUserData = async () => {
 		console.log("Fetching user data");
 		const data = await fetchUser(user?.uid);
@@ -60,7 +64,8 @@ function ChooseOffer() {
 	}
 
     const availableStartDate = (doc) => {
-        return Date.parse(doc.start_date) >= Date.now() ? true : false;  
+        //return Date.parse(doc.start_date) >= Date.now() ? true : false;  
+        return true;
     }
 
     const getDemands = async () => {
@@ -96,9 +101,11 @@ function ChooseOffer() {
     }
 
     const availableTime = (supply) => {
+        /*
         if (Date.parse(supply.start_date) > Date.parse(demandSelected.start_date) || Date.parse(supply.finish_date) < Date.parse(demandSelected.finish_date)) {
             return false;
         }
+        */
 
         return true;
     }
@@ -106,7 +113,8 @@ function ChooseOffer() {
     const availableArcgis = async (supply) => {
         const truck = await fetchTruck(supply.uid, supply.id_truck);
         const demands = await fetchDemandsforSupply(supply.demands)
-        const cost = await canGenerateContract(supply, truck, demands, demandSelected);
+        //const cost = await canGenerateContract(supply, truck, demands, demandSelected);
+        const cost = Math.floor(Math.random() * 10);
 
         const costObj = {
             cost: cost
@@ -131,13 +139,15 @@ function ChooseOffer() {
 			}			
 		}
 		fetchData();
-	}, [user?.uid]);
+	}, [user]);
 
-    if (demandSelected !== null && carriersSupplieswithCost === null) {
+    if (demandSelected !== null && unsortedSupplies === null) {
         const carriersSuppliesFiltered = carriersSupplies.filter(availableTime);
         Promise.all(carriersSuppliesFiltered.map(availableArcgis)).then((carriersSuppliesMapped) => {
-            setCarriersSupplieswithCost(carriersSuppliesMapped)
-            console.log(carriersSuppliesMapped);
+            const carriersSuppliesMappedFiltered = carriersSuppliesMapped.filter((supply) => supply.cost === null ? false : true);
+            console.log(carriersSuppliesMappedFiltered);
+            setUnsortedSupplies([...carriersSuppliesMappedFiltered]);
+            setSortedSupplies([...carriersSuppliesMappedFiltered].sort(sortAsc));
         });
     }
 
@@ -170,6 +180,16 @@ function ChooseOffer() {
         .catch((error) => {
             console.error("Error adding document: ", error);
         });
+    }
+
+    const sortAsc = (a, b) => {
+        if (a.cost < b.cost ) {
+            return -1;
+        }
+        if ( a.cost > b.cost ){
+            return 1;
+        }
+        return 0;
     }
 
 	return (
@@ -219,6 +239,7 @@ function ChooseOffer() {
                                     id={demand.id}
                                     selected={demandSelected === demand ? true : false}
                                     onSelect={() => {setDemandSelected(demand); console.log(demandSelected); console.log(carriersSupplies)}}
+                                    cost={null}
                                 >
                                 </Demand>
                             </React.Fragment>
@@ -227,33 +248,33 @@ function ChooseOffer() {
                 </div>
             </div>
             <div className="halfscreen">
+                <Form.Group className="mb-3" id="formGridCheckbox">
+                    <Form.Check type="checkbox" label="Sort cost ascending"  onChange={(e) => setSorted(prevValue => !prevValue)}/>
+                </Form.Group>
                 <div style={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', flexFlow: 'row wrap'}}>
                     {
                         demandSelected !== null &&
-                        carriersSupplieswithCost !== null &&
-                        carriersSupplieswithCost.map((supply) => (
-                            supply.cost === null ? (
-                                (null)
-                            ) : (
-                                <React.Fragment key={supply.id}>
-                                    <Supply
-                                        id_truck={supply.id_truck}
-                                        id={supply.id}
-                                        start_date={supply.start_date}
-                                        start_place={supply.start_place}
-                                        finish_date={supply.finish_date}
-                                        finish_place={supply.finish_place}
-                                        empty_price_per_km={supply.empty_price_per_km}
-                                        full_price_per_km={supply.full_price_per_km}
-                                        contact_mail={supply.contact_mail}
-                                        contact_phone={supply.contact_phone}
-                                        selected={supplySelected === supply ? true : false}
-                                        onSelect={() => setSupplySelected(supply)}
-                                        cost = {supply.cost}
-                                    >
-                                    </Supply>
-                                </React.Fragment>
-                            )
+                        unsortedSupplies !== null &&
+                        (sorted ? sortedSupplies : unsortedSupplies)
+                        .map((supply) => (
+                            <React.Fragment key={supply.id}>
+                                <Supply
+                                    id_truck={supply.id_truck}
+                                    id={supply.id}
+                                    start_date={supply.start_date}
+                                    start_place={supply.start_place}
+                                    finish_date={supply.finish_date}
+                                    finish_place={supply.finish_place}
+                                    empty_price_per_km={supply.empty_price_per_km}
+                                    full_price_per_km={supply.full_price_per_km}
+                                    contact_mail={supply.contact_mail}
+                                    contact_phone={supply.contact_phone}
+                                    selected={supplySelected === supply ? true : false}
+                                    onSelect={() => setSupplySelected(supply)}
+                                    cost = {supply.cost}
+                                >
+                                </Supply>
+                            </React.Fragment>
                         ))
                     }
                 </div>

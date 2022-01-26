@@ -19,7 +19,6 @@ const CarrierTrucks=()=>{
 	const [role, setRole] = useState("");
     const history = useHistory();
 
-    const [phone, setPhone] = useState("");
     const [licencePlate, setLicencePlate] = useState("");
     const [model, setModel] = useState("");
     const [maxVolume, setMaxVolume] = useState(-1);
@@ -129,7 +128,6 @@ const CarrierTrucks=()=>{
 				const data = userSnap.data();
 				setName(data.name);
 				setRole(data.role);
-                setPhone(userSnap.data().phone);
 				console.log(data.name);
 
                 const trucksCollectionRef = db.collection("users").doc(user?.uid).collection("trucks");
@@ -144,7 +142,7 @@ const CarrierTrucks=()=>{
 			}			
 		}
 		fetchData();
-	}, [user?.uid]);
+	}, [user]);
 
     return(
         <div>

@@ -30,7 +30,8 @@ const Demand=(props)=>{
                         <ListGroupItem>Goods Height: {props.goods_height}m</ListGroupItem>
                         <ListGroupItem>Budget: {props.max_budget}</ListGroupItem>
                         <ListGroupItem>Contact Mail: {props.contact_mail}</ListGroupItem>
-                        <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
+                        <ListGroupItem>Contact Phone: {props.contact_phone}</ListGroupItem>
+                        {props.cost !== null && <ListGroupItem>Cost: {props.cost}</ListGroupItem>}
                     </ListGroup>
                     <Button variant="primary" onClick={props.onSelect}>Select</Button>
                 </Card>

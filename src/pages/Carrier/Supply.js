@@ -22,8 +22,8 @@ const Supply=(props)=>{
                         <ListGroupItem>Empty Price per Km: {props.empty_price_per_km}</ListGroupItem>
                         <ListGroupItem>Full Price per Km: {props.full_price_per_km}</ListGroupItem>
                         <ListGroupItem>Contact Mail: {props.contact_mail}</ListGroupItem>
-                        <ListGroupItem>Contact Place: {props.contact_phone}</ListGroupItem>
-                        <ListGroupItem>Contact Place: {props.cost}</ListGroupItem>
+                        <ListGroupItem>Contact Phone: {props.contact_phone}</ListGroupItem>
+                        {props.cost !== null && <ListGroupItem>Cost: {props.cost}</ListGroupItem>}
                     </ListGroup>
                     <Button variant="primary" onClick={props.onSelect}>Select</Button>
                 </Card>
